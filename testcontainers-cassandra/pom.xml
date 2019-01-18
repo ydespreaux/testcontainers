@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>testcontainers-cassandra</artifactId>
+    <packaging>jar</packaging>
+
+    <name>testcontainers-cassandra</name>
+    <description>Test containers Cassandra</description>
+
+    <!-- Parent dependencies -->
+    <parent>
+        <groupId>com.github.ydespreaux.testcontainers</groupId>
+        <artifactId>testcontainers-build</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <cassandra-driver.version>3.6.0</cassandra-driver.version>
+        <dropwizard-metrics.version>3.2.2</dropwizard-metrics.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.ydespreaux.testcontainers</groupId>
+            <artifactId>testcontainers-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>${cassandra-driver.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>${dropwizard-metrics.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

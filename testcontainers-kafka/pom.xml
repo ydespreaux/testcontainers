@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>testcontainers-kafka</artifactId>
+    <packaging>jar</packaging>
+
+    <name>testcontainers-kafka</name>
+    <description>Bootstrap Springboot Kafka library for tests</description>
+
+    <!-- Parent dependencies -->
+    <parent>
+        <groupId>com.github.ydespreaux.testcontainers</groupId>
+        <artifactId>testcontainers-build</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <spring-kafka.version>2.1.5.RELEASE</spring-kafka.version>
+        <confluent.version>4.0.0</confluent.version>
+        <avro.version>1.8.2</avro.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.ydespreaux.testcontainers</groupId>
+            <artifactId>testcontainers-commons</artifactId>
+        </dependency>
+        <!-- Add Kafka test dependency -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <version>${spring-kafka.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.springframework</groupId>-->
+        <!--<artifactId>spring-context</artifactId>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>5.0.7.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

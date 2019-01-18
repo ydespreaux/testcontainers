@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <logger name="org.apache.zookeeper" level="OFF"/>
+    <logger name="org.apache.kafka" level="OFF"/>
+    <logger name="kafka.server" level="OFF"/>
+    <logger name="io.confluent.kafka" level="OFF"/>
+    <logger name="org.hibernate" level="OFF"/>
+    <logger name="org.springframework" level="ERROR"/>
+    <logger name="org.I0Itec.zkclient" level="ERROR"/>
+
+    <logger name="com.github.dockerjava" level="INFO"/>
+    <logger name="io.confluent.testcontainers" level="INFO"/>
+
+    <!--<logger name="com.yammer.metrics.reporting" level="OFF"/>-->
+    <logger name="com.github.ydespreaux.spring.testcontainers.kafka" level="INFO"/>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
