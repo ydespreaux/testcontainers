@@ -39,12 +39,6 @@ public class CassandraContainerConfigTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void withCqlScriptDirectoryWithResourceNotFound() {
-        new CassandraContainer()
-                .withCqlScriptDirectory("db-schema-notfound");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void withCqlScriptDirectoryWithFileResource() {
         new CassandraContainer()
                 .withCqlScriptDirectory("db-schema/1-keyspace/1-schema.cql");
