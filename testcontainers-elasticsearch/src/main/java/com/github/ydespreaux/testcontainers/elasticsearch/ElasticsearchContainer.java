@@ -51,7 +51,9 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
      * Define the elasticsearch url for spring boot properties.
      */
     @Getter
-    private String urisSystemProperty = "spring.elasticsearch.jest.uris";
+    private String jestUrisSystemProperty = "spring.elasticsearch.jest.uris";
+    @Getter
+    private String restUrisSystemProperty = "spring.elasticsearch.rest.uris";
 
     /**
      * Default constructor
@@ -87,8 +89,13 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
      * @param urisSystemProperty
      * @return
      */
-    public SELF withUrisSystemProperty(String urisSystemProperty) {
-        this.urisSystemProperty = urisSystemProperty;
+    public SELF withJestUrisSystemProperty(String urisSystemProperty) {
+        this.jestUrisSystemProperty = urisSystemProperty;
+        return this.self();
+    }
+
+    public SELF withRestUrisSystemProperty(String urisSystemProperty) {
+        this.restUrisSystemProperty = urisSystemProperty;
         return this.self();
     }
 
@@ -147,8 +154,11 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
      * Register system properties
      */
     protected void registerElasticsearchEnvironment() {
-        if (!StringUtils.isEmpty(this.urisSystemProperty)) {
-            System.setProperty(this.urisSystemProperty, getURL());
+        if (!StringUtils.isEmpty(this.jestUrisSystemProperty)) {
+            System.setProperty(this.jestUrisSystemProperty, getURL());
+        }
+        if (!StringUtils.isEmpty(this.restUrisSystemProperty)) {
+            System.setProperty(this.restUrisSystemProperty, getURL());
         }
     }
 

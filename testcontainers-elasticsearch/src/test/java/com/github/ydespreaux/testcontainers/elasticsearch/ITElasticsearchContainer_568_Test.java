@@ -37,7 +37,8 @@ public class ITElasticsearchContainer_568_Test {
 
     @Test
     public void environmentSystemProperty() {
-        assertThat(System.getProperty(elasticContainer.getUrisSystemProperty()), is(equalTo("http://" + elasticContainer.getContainerIpAddress() + ":" + elasticContainer.getHttpPort())));
+        assertThat(System.getProperty(elasticContainer.getJestUrisSystemProperty()), is(equalTo("http://" + elasticContainer.getContainerIpAddress() + ":" + elasticContainer.getHttpPort())));
+        assertThat(System.getProperty(elasticContainer.getRestUrisSystemProperty()), is(equalTo("http://" + elasticContainer.getContainerIpAddress() + ":" + elasticContainer.getHttpPort())));
     }
 
     @Test
