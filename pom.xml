@@ -8,6 +8,13 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>testcontainers-build</name>
+    <description>Defined kafka, elasticsearh, mysql, cassandra containers</description>
+    <url>https://github.com/ydespreaux/testcontainers</url>
+    <licenses>
+        <license>
+            <distribution>GNU General Public License</distribution>
+        </license>
+    </licenses>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
