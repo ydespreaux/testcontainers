@@ -87,27 +87,14 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      */
     private String restAppSystemProperty;
 
-    /**
-     * @param version
-     * @param brokersServerUrl
-     */
     public KafkaConnectContainer(String version, String brokersServerUrl) {
         this(version, getAvailableMappingPort(), brokersServerUrl, null);
     }
 
-    /**
-     * @param version
-     * @param brokersServerUrl
-     */
     public KafkaConnectContainer(String version, String brokersServerUrl, String schemaRegistryUrl) {
         this(version, getAvailableMappingPort(), brokersServerUrl, schemaRegistryUrl);
     }
 
-    /**
-     * @param version
-     * @param restAppMappingPort
-     * @param brokersServerUrl
-     */
     public KafkaConnectContainer(String version, int restAppMappingPort, String brokersServerUrl, String schemaRegistryUrl) {
         super(KAFKA_CONNECT_DEFAULT_BASE_URL + ":" + version);
         this.restAppMappingPort = restAppMappingPort;

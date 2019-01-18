@@ -112,7 +112,6 @@ public class SchemaRegistryContainer<SELF extends SchemaRegistryContainer<SELF>>
     /**
      * Start the container.
      *
-     * @throws Exception
      */
     @Override
     public void start() {
