@@ -217,6 +217,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <!-- Excludes integration tests when unit tests are run. -->
+                    <excludes>
+                        <exclude>**/IT*.java</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>integration-tests</id>
