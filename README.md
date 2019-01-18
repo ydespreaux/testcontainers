@@ -25,8 +25,8 @@ Versions
 
 ```xml
 <dependency>
-    <groupId>com.github.ydespreaux.spring.testcontainers</groupId>
-    <artifactId>spring-testcontainers-mysql</artifactId>
+    <groupId>com.github.ydespreaux.testcontainers</groupId>
+    <artifactId>testcontainers-mysql</artifactId>
     <version>1.0.0</version>
     <scope>test</scope>
 </dependency>
@@ -143,8 +143,8 @@ public class ITMySQLTest {
 
 ```xml
 <dependency>
-    <groupId>com.github.ydespreaux.spring.testcontainers</groupId>
-    <artifactId>spring-testcontainers-cassandra</artifactId>
+    <groupId>com.github.ydespreaux.testcontainers</groupId>
+    <artifactId>testcontainers-cassandra</artifactId>
     <version>1.0.0</version>
     <scope>test</scope>
 </dependency>
@@ -208,8 +208,8 @@ La méthode withCqlScriptDirectory(...) prend un paramètre le chemin d'un répe
 
 ```xml
 <dependency>
-    <groupId>com.github.ydespreaux.spring.testcontainers</groupId>
-    <artifactId>spring-testcontainers-elasticsearch</artifactId>
+    <groupId>com.github.ydespreaux.testcontainers</groupId>
+    <artifactId>testcontainers-elasticsearch</artifactId>
     <version>1.0.0</version>
     <scope>test</scope>
 </dependency>
@@ -257,8 +257,8 @@ Le nom des propriétés spring boot peuvent être modifiées à l'aide des méth
 
 ```xml
 <dependency>
-    <groupId>com.github.ydespreaux.spring.testcontainers</groupId>
-    <artifactId>spring-testcontainers-kafka</artifactId>
+    <groupId>com.github.ydespreaux.testcontainers</groupId>
+    <artifactId>testcontainers-kafka</artifactId>
     <version>1.0.0</version>
     <scope>test</scope>
 </dependency>
