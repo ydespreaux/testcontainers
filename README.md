@@ -22,6 +22,15 @@ Versions
 |:--------------------------:|:----------------:|
 |   1.0.0                    |       1.8.3      |
 
+#### Prerequisites
+
+Using this library requires a Docker configuration beforehand so that the docker containers can be running:
+
+* Docker version should be at least 1.6.0
+* Docker environment should have more than 2GB free disk space
+* File should be mountable
+* Expose daemon on tcp://localhost:2375 without TLS
+
 ### MySQL
 
 ##### Add the Maven dependency
