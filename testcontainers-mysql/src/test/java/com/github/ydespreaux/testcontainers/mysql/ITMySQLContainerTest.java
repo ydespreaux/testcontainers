@@ -44,7 +44,8 @@ public class ITMySQLContainerTest {
             .withUrlSystemProperty("jdbc.url")
             .withUsernameSystemProperty("jdbc.username")
             .withPasswordSystemProperty("jdbc.password")
-            .withPlatformSystemProperty("jdbc.platform");
+            .withPlatformSystemProperty("jdbc.platform")
+            .withStartupTimeoutSeconds(180);
 
     @Test
     public void environmentSystemProperty() {

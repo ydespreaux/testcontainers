@@ -42,11 +42,11 @@ import static java.lang.String.format;
 /**
  * Define Kafka connect container.
  *
- * @param <SELF>
- * @since 1.1.1
+ * @author Yoann Despréaux
+ * @since 1.0.0
  */
 @Slf4j
-public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> extends FixedHostPortGenericContainer<SELF> implements IContainer<SELF> {
+public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaConnectContainer> implements IContainer<KafkaConnectContainer> {
 
     /**
      * Key / value for Configuration
@@ -178,7 +178,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param groupId
      * @return
      */
-    public SELF withGroupId(String groupId) {
+    public KafkaConnectContainer withGroupId(String groupId) {
         if (groupId != null) {
             withEnv(GROUP_ID_CONFIG, groupId);
         }
@@ -191,7 +191,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param topic
      * @return
      */
-    public SELF withConfigStorageTopic(String topic) {
+    public KafkaConnectContainer withConfigStorageTopic(String topic) {
         if (topic != null) {
             withEnv(CONFIG_STORAGE_TOPIC_CONFIG, topic);
         }
@@ -204,7 +204,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param replication
      * @return
      */
-    public SELF withConfigStorageReplicationFactor(Integer replication) {
+    public KafkaConnectContainer withConfigStorageReplicationFactor(Integer replication) {
         if (replication != null) {
             withEnv(CONFIG_STORAGE_REPLICATION_FACTOR_CONFIG, String.valueOf(replication));
         }
@@ -217,7 +217,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param topic
      * @return
      */
-    public SELF withOffsetStorageTopic(String topic) {
+    public KafkaConnectContainer withOffsetStorageTopic(String topic) {
         if (topic != null) {
             withEnv(OFFSET_STORAGE_TOPIC_CONFIG, topic);
         }
@@ -230,7 +230,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param partitions
      * @return
      */
-    public SELF withOffsetStoragePartition(Integer partitions) {
+    public KafkaConnectContainer withOffsetStoragePartition(Integer partitions) {
         if (partitions != null) {
             withEnv(OFFSET_STORAGE_PARTITIONS_CONFIG, String.valueOf(partitions));
         }
@@ -243,7 +243,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param replication
      * @return
      */
-    public SELF withOffsetStorageReplicationFactor(Integer replication) {
+    public KafkaConnectContainer withOffsetStorageReplicationFactor(Integer replication) {
         if (replication != null) {
             withEnv(OFFSET_STORAGE_REPLICATION_FACTOR_CONFIG, String.valueOf(replication));
         }
@@ -256,7 +256,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param topic
      * @return
      */
-    public SELF withStatusStorageTopic(String topic) {
+    public KafkaConnectContainer withStatusStorageTopic(String topic) {
         if (topic != null) {
             withEnv(STATUS_STORAGE_TOPIC_CONFIG, topic);
         }
@@ -269,7 +269,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param partitions
      * @return
      */
-    public SELF withStatusStoragePartition(Integer partitions) {
+    public KafkaConnectContainer withStatusStoragePartition(Integer partitions) {
         if (partitions != null) {
             withEnv(STATUS_STORAGE_PARTITIONS_CONFIG, String.valueOf(partitions));
         }
@@ -282,7 +282,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param replication
      * @return
      */
-    public SELF withStatusStorageReplicationFactor(Integer replication) {
+    public KafkaConnectContainer withStatusStorageReplicationFactor(Integer replication) {
         if (replication != null) {
             withEnv(STATUS_STORAGE_REPLICATION_FACTOR_CONFIG, String.valueOf(replication));
         }
@@ -295,7 +295,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param storageFilename
      * @return
      */
-    public SELF withOffsetStorageFilename(String storageFilename) {
+    public KafkaConnectContainer withOffsetStorageFilename(String storageFilename) {
         if (storageFilename != null) {
             withEnv(OFFSET_STORAGE_FILE_FILENAME_CONFIG, storageFilename);
         }
@@ -308,7 +308,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param keyConverter
      * @return
      */
-    public SELF withKeyConverter(String keyConverter) {
+    public KafkaConnectContainer withKeyConverter(String keyConverter) {
         if (keyConverter != null) {
             withEnv(KEY_CONVERTER_CONFIG, keyConverter);
             if (keyConverter.contains("AvroConverter")) {
@@ -328,7 +328,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param valueConverter
      * @return
      */
-    public SELF withValueConverter(String valueConverter) {
+    public KafkaConnectContainer withValueConverter(String valueConverter) {
         if (valueConverter != null) {
             withEnv(VALUE_CONVERTER_CONFIG, valueConverter);
             if (valueConverter.contains("AvroConverter")) {
@@ -349,7 +349,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param plugins
      * @return
      */
-    public SELF withPlugins(Set<String> plugins) {
+    public KafkaConnectContainer withPlugins(Set<String> plugins) {
         if (plugins == null) {
             return this.self();
         }
@@ -363,7 +363,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param plugins
      * @return
      */
-    public SELF withPlugins(String plugins) {
+    public KafkaConnectContainer withPlugins(String plugins) {
         if (plugins == null) {
             return this.self();
         }
@@ -388,7 +388,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @param restAppSystemProperty
      * @return
      */
-    public SELF withRestAppSystemProperty(String restAppSystemProperty) {
+    public KafkaConnectContainer withRestAppSystemProperty(String restAppSystemProperty) {
         if (restAppSystemProperty != null) {
             this.restAppSystemProperty = restAppSystemProperty;
         }
@@ -402,7 +402,7 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
      * @return
      */
     @Override
-    public SELF withRegisterSpringbootProperties(boolean registerProperties) {
+    public KafkaConnectContainer withRegisterSpringbootProperties(boolean registerProperties) {
         this.registerSpringbootProperties = registerProperties;
         return this.self();
     }
@@ -445,4 +445,21 @@ public class KafkaConnectContainer<SELF extends KafkaConnectContainer<SELF>> ext
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof KafkaConnectContainer)) return false;
+        if (!super.equals(o)) return false;
+        KafkaConnectContainer that = (KafkaConnectContainer) o;
+        return restAppMappingPort == that.restAppMappingPort &&
+                registerSpringbootProperties == that.registerSpringbootProperties &&
+                Objects.equals(brokersServerUrl, that.brokersServerUrl) &&
+                Objects.equals(schemaRegistryUrl, that.schemaRegistryUrl) &&
+                Objects.equals(restAppSystemProperty, that.restAppSystemProperty);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), restAppMappingPort, brokersServerUrl, schemaRegistryUrl, registerSpringbootProperties, restAppSystemProperty);
+    }
 }

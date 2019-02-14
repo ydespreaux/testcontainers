@@ -1,0 +1,24 @@
+[
+  {
+    "method": "PUT",
+    "path": "my-index",
+    "payload": "@resource(scripts/indices/index1.json)"
+  },
+  {
+    "method": "PUT",
+    "path": "_template/template2",
+    "payload": "@resource(scripts/template/template2.json)"
+  },
+  {
+    "method": "PUT",
+    "path": "load_test_index/test_type/1",
+    "payload": {
+      "name": "alex"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "load_test_index/_refresh",
+    "payload": {}
+  }
+]

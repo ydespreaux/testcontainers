@@ -36,11 +36,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 @RunWith(SpringRunner.class)
-public class ITElasticsearchContainer_641_Test {
+public class ITElasticsearchContainer_642_Test {
 
     @ClassRule
-    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer("6.4.1")
-            .withSynonyms("synonyms");
+    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer("6.4.2")
+            .withConfigDirectory("config")
+            .withFileInitScript("scripts/init.script")
+            .withFileInitScript("scripts/init.json");
 
     private static String testUrl(String path) {
         return elasticContainer.getURL() + path;
@@ -76,6 +78,35 @@ public class ITElasticsearchContainer_641_Test {
         Response response = call("/_cluster/health");
         assertThat(response.isSuccessful(), is(true));
     }
+
+    @Test
+    public void getIndex() throws IOException {
+        Response response = call("/load_test_index");
+        assertThat(response.isSuccessful(), is(true));
+        assertThat(response.code(), is(equalTo(200)));
+    }
+
+    @Test
+    public void getIndexFromResource() throws IOException {
+        Response response = call("/index-1");
+        assertThat(response.isSuccessful(), is(true));
+        assertThat(response.code(), is(equalTo(200)));
+    }
+
+    @Test
+    public void getTemplateFromResource() throws IOException {
+        Response response = call("/_template/template2");
+        assertThat(response.isSuccessful(), is(true));
+        assertThat(response.code(), is(equalTo(200)));
+    }
+
+    @Test
+    public void getDocument() throws IOException {
+        Response response = call("/load_test_index/test_type/2");
+        assertThat(response.isSuccessful(), is(true));
+        assertThat(response.code(), is(equalTo(200)));
+    }
+
 
     private Response call(String path) throws IOException {
         OkHttpClient client = createHttpClient();

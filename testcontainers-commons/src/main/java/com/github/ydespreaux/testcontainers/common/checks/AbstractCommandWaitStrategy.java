@@ -29,6 +29,7 @@ import org.testcontainers.containers.GenericContainer;
  * This policy allows you to execute a shell command in the docker container to verify
  * that the container is started.
  *
+ * @author Yoann Despréaux
  * @since 1.0.0
  */
 @Slf4j

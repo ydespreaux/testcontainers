@@ -21,12 +21,14 @@
 package com.github.ydespreaux.testcontainers.elasticsearch;
 
 import com.github.ydespreaux.testcontainers.common.IContainer;
+import com.github.ydespreaux.testcontainers.elasticsearch.client.ElasticsearchClient;
+import com.github.ydespreaux.testcontainers.elasticsearch.client.ElasticsearchCommand;
+import com.github.ydespreaux.testcontainers.elasticsearch.client.ElasticsearchCommandParser;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.shaded.org.apache.commons.io.FilenameUtils;
 import org.testcontainers.utility.MountableFile;
@@ -36,10 +38,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.containerLogsConsumer;
@@ -48,11 +47,11 @@ import static java.lang.String.format;
 /**
  * Elasticsearch container
  *
- * @param <SELF>
+ * @author Yoann Despréaux
  * @since 1.0.0
  */
 @Slf4j
-public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> extends GenericContainer<SELF> implements IContainer<SELF> {
+public class ElasticsearchContainer extends GenericContainer<ElasticsearchContainer> implements IContainer<ElasticsearchContainer> {
 
     private static final int ELASTICSEARCH_DEFAULT_PORT = 9200;
     private static final int ELASTICSEARCH_DEFAULT_TCP_PORT = 9300;
@@ -60,7 +59,6 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
     private static final String ELASTICSEARCH_DEFAULT_VERSION = "5.6.8";
 
     private static final String ELASTICSEARCH_CONFIG_DIRECTORY = "/usr/share/elasticsearch/config";
-    private static final String ELASTICSEARCH_DEFAULT_SYNONYMS_DIRECTORY = "synonyms";
 
     /**
      * Register springboot properties in environment
@@ -74,6 +72,8 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
     private String jestUrisSystemProperty = "spring.elasticsearch.jest.uris";
     @Getter
     private String restUrisSystemProperty = "spring.elasticsearch.rest.uris";
+
+    private List<ElasticsearchCommand> commands = new ArrayList<>();
 
     /**
      * Default constructor
@@ -100,6 +100,7 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
      */
     public ElasticsearchContainer(String baseUrl, String version) {
         super(baseUrl + ":" + version);
+        waitingFor(Wait.forHttp("/"));
     }
 
     /**
@@ -109,12 +110,12 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
      * @param urisSystemProperty
      * @return
      */
-    public SELF withJestUrisSystemProperty(String urisSystemProperty) {
+    public ElasticsearchContainer withJestUrisSystemProperty(String urisSystemProperty) {
         this.jestUrisSystemProperty = urisSystemProperty;
         return this.self();
     }
 
-    public SELF withRestUrisSystemProperty(String urisSystemProperty) {
+    public ElasticsearchContainer withRestUrisSystemProperty(String urisSystemProperty) {
         this.restUrisSystemProperty = urisSystemProperty;
         return this.self();
     }
@@ -144,7 +145,6 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
         addExposedPort(ELASTICSEARCH_DEFAULT_PORT);
         addExposedPort(ELASTICSEARCH_DEFAULT_TCP_PORT);
         withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withName("testcontainsers-elasticsearch-" + UUID.randomUUID()));
-        waitingFor(Wait.forHttp("/")); // Wait until elastic start
     }
 
     /**
@@ -153,21 +153,13 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
     @Override
     public void start() {
         super.start();
+        if (!commands.isEmpty()) {
+            ElasticsearchClient client = new ElasticsearchClient(this);
+            commands.forEach(client::execute);
+        }
         if (registerSpringbootProperties()) {
             registerElasticsearchEnvironment();
         }
-    }
-
-    /**
-     * Set the network
-     *
-     * @param network
-     * @return
-     */
-    @Override
-    public SELF withNetwork(Network network) {
-        super.withNetwork(network);
-        return this.self();
     }
 
     /**
@@ -188,7 +180,7 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
      * @return
      */
     @Override
-    public SELF withRegisterSpringbootProperties(boolean registerProperties) {
+    public ElasticsearchContainer withRegisterSpringbootProperties(boolean registerProperties) {
         this.registerSpringbootProperties = registerProperties;
         return this.self();
     }
@@ -232,7 +224,7 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
         return this.getMappedPort(ELASTICSEARCH_DEFAULT_PORT);
     }
 
-    public SELF withConfigDirectory(String localPath) {
+    public ElasticsearchContainer withConfigDirectory(String localPath) {
         Objects.requireNonNull(localPath, "localVolume must be provided");
         MountableFile mountableFile = MountableFile.forClasspathResource(localPath);
         Path path = Paths.get(mountableFile.getResolvedPath());
@@ -243,35 +235,17 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
         if (file.isFile()) {
             addMountableFile(path, ELASTICSEARCH_CONFIG_DIRECTORY);
         } else {
-            scanSynonymsDirectory(path, path, ELASTICSEARCH_CONFIG_DIRECTORY);
+            scanDirectory(path, path, ELASTICSEARCH_CONFIG_DIRECTORY);
         }
         return self();
     }
 
-    public SELF withSynonyms(String localPath) {
-        return withSynonyms(localPath, ELASTICSEARCH_DEFAULT_SYNONYMS_DIRECTORY);
-    }
-
-    public SELF withSynonyms(String localPath, String targetPath) {
-        Objects.requireNonNull(localPath, "localVolume must be provided");
-        Objects.requireNonNull(targetPath, "targetPath must be provided");
-        MountableFile mountableFile = MountableFile.forClasspathResource(localPath);
-        Path path = Paths.get(mountableFile.getResolvedPath());
-        File file = path.toFile();
-        if (!file.exists()) {
-            throw new IllegalArgumentException(format("Resource with path %s could not be found", path.toString()));
-        }
-        if (targetPath.startsWith("/")) {
-            targetPath = targetPath.substring(1);
-        }
-        if (targetPath.endsWith("/")) {
-            targetPath = targetPath.substring(0, targetPath.length() - 1);
-        }
-        if (file.isFile()) {
-            addMountableFile(path, ELASTICSEARCH_CONFIG_DIRECTORY + "/" + targetPath);
-        } else {
-            scanSynonymsDirectory(path, path, ELASTICSEARCH_CONFIG_DIRECTORY + "/" + targetPath);
-        }
+    /**
+     * @param fileInitPath
+     * @return
+     */
+    public ElasticsearchContainer withFileInitScript(String fileInitPath) {
+        commands.addAll(ElasticsearchCommandParser.INSTANCE.parse(fileInitPath));
         return self();
     }
 
@@ -279,7 +253,7 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
      * @param localPath
      * @param containerPath
      */
-    private void scanSynonymsDirectory(Path localRootPath, Path localPath, String containerPath) {
+    private void scanDirectory(Path localRootPath, Path localPath, String containerPath) {
         try (Stream<Path> paths = Files.list(localPath)) {
             paths
                     .filter(path -> path.toFile().isDirectory() || FilenameUtils.getExtension(path.toFile().getName()).equals("txt"))
@@ -289,7 +263,7 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
                             String pathFilename = path.toString().substring(localRootPath.toString().length() + 1);
                             addMountableFile(path, containerPath + '/' + pathFilename);
                         } else {
-                            scanSynonymsDirectory(localRootPath, path, containerPath);
+                            scanDirectory(localRootPath, path, containerPath);
                         }
                     });
         } catch (IOException e) {
@@ -303,4 +277,19 @@ public class ElasticsearchContainer<SELF extends ElasticsearchContainer<SELF>> e
         this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, BindMode.READ_ONLY);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ElasticsearchContainer)) return false;
+        if (!super.equals(o)) return false;
+        ElasticsearchContainer that = (ElasticsearchContainer) o;
+        return registerSpringbootProperties == that.registerSpringbootProperties &&
+                Objects.equals(getJestUrisSystemProperty(), that.getJestUrisSystemProperty()) &&
+                Objects.equals(getRestUrisSystemProperty(), that.getRestUrisSystemProperty());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), registerSpringbootProperties, getJestUrisSystemProperty(), getRestUrisSystemProperty());
+    }
 }
