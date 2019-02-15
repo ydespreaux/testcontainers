@@ -26,6 +26,7 @@ import org.testcontainers.containers.GenericContainer;
  * Define a waiting strategy.
  * This policy allows you to run a shell command once to test the state of the container.
  *
+ * @author Yoann Despréaux
  * @since 1.0.0
  */
 public abstract class AbstractInitOnStartupStrategy extends AbstractCommandWaitStrategy {

@@ -39,6 +39,7 @@ import java.util.function.Consumer;
 import static java.lang.String.format;
 
 /**
+ * @author Yoann Despréaux
  * @since 1.0.0
  */
 public class ContainerUtils {

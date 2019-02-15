@@ -46,7 +46,7 @@ public class ITKafkaConnectContainerTest {
 
     @BeforeClass
     public static void onSetupClass() {
-        kafkaConnectContainer = new KafkaConnectContainer<>("4.1.0",
+        kafkaConnectContainer = new KafkaConnectContainer("4.1.0",
                 kafkaContainer.getKafkaContainer().getInternalURL())
                 .withNetwork(kafkaContainer.getNetwork());
         kafkaConnectContainer.start();

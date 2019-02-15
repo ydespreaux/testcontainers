@@ -40,7 +40,8 @@ public class ITMySQLContainerWithInitSchemaFileTest {
     public static MySQLContainer mySqlContainer = new MySQLContainer()
             .withDatabaseName("an_springboot_aa")
             .withSqlScriptFile("mysql-init/user-schema-init.sql")
-            .withSqlScriptFile("mysql-init/workstation-schema-init.sql");
+            .withSqlScriptFile("mysql-init/workstation-schema-init.sql")
+            .withStartupTimeoutSeconds(180);
 
     private Connection connection;
     private Statement statement;

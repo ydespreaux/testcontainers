@@ -26,13 +26,14 @@ import org.springframework.beans.factory.InitializingBean;
 import org.testcontainers.containers.Network;
 
 /**
- * @param <SELF>
- * @since 1.0.1
+ * @param <S>
+ * @author Yoann Despréaux
+ * @since 1.0.0
  */
-public interface ConfluentContainer<SELF extends ConfluentContainer<SELF>> extends TestRule, InitializingBean, DisposableBean {
+public interface ConfluentContainer<S extends ConfluentContainer<S>> extends TestRule, InitializingBean, DisposableBean {
 
-    default SELF self() {
-        return (SELF) this;
+    default S self() {
+        return (S) this;
     }
 
     /**
@@ -41,7 +42,7 @@ public interface ConfluentContainer<SELF extends ConfluentContainer<SELF>> exten
      * @param registerProperties
      * @return
      */
-    SELF withRegisterSpringbootProperties(boolean registerProperties);
+    S withRegisterSpringbootProperties(boolean registerProperties);
 
     /**
      * Set the network
@@ -49,5 +50,5 @@ public interface ConfluentContainer<SELF extends ConfluentContainer<SELF>> exten
      * @param network
      * @return
      */
-    SELF withNetwork(Network network);
+    S withNetwork(Network network);
 }

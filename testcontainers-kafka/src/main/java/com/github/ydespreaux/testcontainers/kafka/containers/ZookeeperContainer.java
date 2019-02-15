@@ -26,6 +26,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.containerLogsConsumer;
@@ -35,11 +36,11 @@ import static java.lang.String.format;
 /**
  * Zookeeper container.
  *
- * @param <SELF>
+ * @author Yoann Despréaux
  * @since 1.0.0
  */
 @Slf4j
-public class ZookeeperContainer<SELF extends ZookeeperContainer<SELF>> extends FixedHostPortGenericContainer<SELF> implements IContainer<SELF> {
+public class ZookeeperContainer extends FixedHostPortGenericContainer<ZookeeperContainer> implements IContainer<ZookeeperContainer> {
 
     private static final String ZOOKEEPER_DEFAULT_BASE_URL = "confluentinc/cp-zookeeper";
 
@@ -82,7 +83,7 @@ public class ZookeeperContainer<SELF extends ZookeeperContainer<SELF>> extends F
      * @return
      */
     @Override
-    public SELF withRegisterSpringbootProperties(boolean registerProperties) {
+    public ZookeeperContainer withRegisterSpringbootProperties(boolean registerProperties) {
         return this.self();
     }
 
@@ -113,13 +114,18 @@ public class ZookeeperContainer<SELF extends ZookeeperContainer<SELF>> extends F
         return format("%s:%s", this.getNetworkAliases().get(0), this.mappingPort);
     }
 
-    /**
-     * @return
-     * @deprecated use getInternalURL()
-     */
-    @Deprecated
-    public String getLocalURL() {
-        return getInternalURL();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ZookeeperContainer)) return false;
+        if (!super.equals(o)) return false;
+        ZookeeperContainer that = (ZookeeperContainer) o;
+        return getMappingPort() == that.getMappingPort();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getMappingPort());
     }
 
     /**

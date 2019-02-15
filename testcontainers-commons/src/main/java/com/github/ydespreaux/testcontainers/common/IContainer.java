@@ -23,17 +23,18 @@ package com.github.ydespreaux.testcontainers.common;
 import org.testcontainers.containers.Container;
 
 /**
- * @param <SELF>
+ * @param <S>
+ * @author Yoann Despréaux
  * @since 1.0.0
  */
-public interface IContainer<SELF extends IContainer<SELF>> extends Container<SELF> {
+public interface IContainer<S extends IContainer<S>> extends Container<S> {
 
 
     /**
      * @param registerProperties
      * @return
      */
-    SELF withRegisterSpringbootProperties(boolean registerProperties);
+    S withRegisterSpringbootProperties(boolean registerProperties);
 
     /**
      * @return

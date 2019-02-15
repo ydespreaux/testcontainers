@@ -39,11 +39,12 @@ import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.g
  * This class is used to start a zookeeper container, a kafka container, and a schema registry container
  * if it is enabled.
  *
- * @param <SELF>
+ * @param <S>
+ * @author Yoann Despréaux
  * @since 1.0.0
  */
 @Slf4j
-public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>> extends ExternalResource implements ConfluentContainer<SELF> {
+public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> extends ExternalResource implements ConfluentContainer<S> {
 
     private static final String CONFLUENT_DEFAULT_VERSION = "3.3.1";
 
@@ -123,7 +124,7 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
      * @param schemaRegistryEnabled
      * @return
      */
-    public SELF withSchemaRegistry(boolean schemaRegistryEnabled) {
+    public S withSchemaRegistry(boolean schemaRegistryEnabled) {
         this.schemaRegistryEnabled = schemaRegistryEnabled;
         return this.self();
     }
@@ -134,7 +135,7 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
      * @param registerProperties
      * @return
      */
-    public SELF withRegisterSpringbootProperties(boolean registerProperties) {
+    public S withRegisterSpringbootProperties(boolean registerProperties) {
         this.registerSpringbootProperties = registerProperties;
         return this.self();
     }
@@ -152,7 +153,7 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
      * @param network
      * @return
      */
-    public SELF withNetwork(Network network) {
+    public S withNetwork(Network network) {
         this.network = network;
         return this.self();
     }
@@ -161,7 +162,7 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
      * @param brokerServersSystemProperty
      * @return
      */
-    public SELF withBrokerServersSystemProperty(String brokerServersSystemProperty) {
+    public S withBrokerServersSystemProperty(String brokerServersSystemProperty) {
         this.brokerServersSystemProperty = brokerServersSystemProperty;
         return this.self();
     }
@@ -170,7 +171,7 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
      * @param schemaRegistrySystemProperty
      * @return
      */
-    public SELF withSchemaRegistrySystemProperty(String schemaRegistrySystemProperty) {
+    public S withSchemaRegistrySystemProperty(String schemaRegistrySystemProperty) {
         this.schemaRegistrySystemProperty = schemaRegistrySystemProperty;
         return this.self();
     }
@@ -179,7 +180,7 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
      * @param version
      * @return
      */
-    public SELF withFormatMessageVersion(String version) {
+    public S withFormatMessageVersion(String version) {
         this.formatMessageVersion = version;
         return this.self();
     }
@@ -190,7 +191,7 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
      * @param compact
      * @return
      */
-    public SELF withTopic(String topicName, int partitions, boolean compact) {
+    public S withTopic(String topicName, int partitions, boolean compact) {
         return withTopic(new TopicConfiguration(topicName, partitions, compact));
     }
 
@@ -198,7 +199,7 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
      * @param topic
      * @return
      */
-    public SELF withTopic(TopicConfiguration topic) {
+    public S withTopic(TopicConfiguration topic) {
         Objects.requireNonNull(topic);
         Objects.requireNonNull(topic.getName());
         this.topics.add(topic);
@@ -268,11 +269,11 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
             withNetwork(Network.newNetwork());
         }
 
-        zookeeperContainer = new ZookeeperContainer<>(this.confluentVersion)
+        zookeeperContainer = new ZookeeperContainer(this.confluentVersion)
                 .withNetwork(network);
         zookeeperContainer.start();
 
-        kafkaContainer = new KafkaContainer<>(this.confluentVersion)
+        kafkaContainer = new KafkaContainer(this.confluentVersion)
                 .withZookeeperHostname(getContainerHostname(zookeeperContainer))
                 .withZookeeperPort(zookeeperContainer.getMappingPort())
                 .withRegisterSpringbootProperties(this.registerSpringbootProperties)
@@ -286,7 +287,7 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
         }
 
         if (this.schemaRegistryEnabled) {
-            schemaRegistryContainer = new SchemaRegistryContainer<>(this.confluentVersion)
+            schemaRegistryContainer = new SchemaRegistryContainer(this.confluentVersion)
                     .withZookeeperInternalURL(zookeeperContainer.getInternalURL())
                     .withBootstrapServersInternalURL(kafkaContainer.getInternalURL())
                     .withRegisterSpringbootProperties(this.registerSpringbootProperties)
@@ -312,11 +313,6 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
         }
     }
 
-    @Override
-    public SELF self() {
-        return (SELF) this;
-    }
-
     /**
      * @param topic
      */
@@ -330,12 +326,11 @@ public class ConfluentKafkaContainer<SELF extends ConfluentKafkaContainer<SELF>>
     public void createTopics(List<TopicConfiguration> topics) {
         if (!topics.isEmpty()) {
             final String zookeeper = this.getZookeeperConnect();
-            final KafkaContainer kafkaContainer = this.getKafkaContainer();
-            topics.forEach(topic -> {
+            topics.forEach(topic ->
                 execCmd(kafkaContainer.getDockerClient(),
                         kafkaContainer.getContainerId(),
-                        getCreateTopicCmd(topic.getName(), topic.getPartitions(), topic.isCompact(), zookeeper, 1));
-            });
+                        getCreateTopicCmd(topic.getName(), topic.getPartitions(), topic.isCompact(), zookeeper, 1))
+            );
         }
     }
 

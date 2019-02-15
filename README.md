@@ -20,9 +20,10 @@ Versions
 
 |   spring-testcontainers    |   testcontainers |
 |:--------------------------:|:----------------:|
+|   1.1.0                    |       1.10.6     |
 |   1.0.0                    |       1.8.3      |
 
-#### Prerequisites
+## Prerequisites
 
 Using this library requires a Docker configuration beforehand so that the docker containers can be running:
 
@@ -31,9 +32,9 @@ Using this library requires a Docker configuration beforehand so that the docker
 * File should be mountable
 * Expose daemon on tcp://localhost:2375 without TLS
 
-### MySQL
+## MySQL
 
-##### Add the Maven dependency
+### Add the Maven dependency
 
 ```xml
 <dependency>
@@ -44,7 +45,7 @@ Using this library requires a Docker configuration beforehand so that the docker
 </dependency>
 ```
 
-##### Quick Start
+### Quick Start
 
 ```java
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -152,9 +153,9 @@ public class ITMySQLTest {
 ```
 
 
-### Cassandra
+## Cassandra
 
-##### Add the Maven dependency
+### Add the Maven dependency
 
 ```xml
 <dependency>
@@ -165,7 +166,7 @@ public class ITMySQLTest {
 </dependency>
 ```
 
-##### Quick Start
+### Quick Start
 
 ```java
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -221,20 +222,20 @@ public class ITMySQLTest {
 
 The withCqlScriptDirectory (...) method takes a parameter from the directory path. The set of scripts cql will be executed after the start of the container.
 
-### Elasticsearch
+## Elasticsearch
 
-##### Add the Maven dependency
+### Add the Maven dependency
 
 ```xml
 <dependency>
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-elasticsearch</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <scope>test</scope>
 </dependency>
 ```
 
-##### Quick Start
+### Quick Start
 
 ```java
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -275,9 +276,73 @@ The name of the spring boot properties can be changed using the following method
 | withJestUrisSystemProperty   | Modifies the property corresponding to uris of elasticsearch for jest                           |
 | withRestUrisSystemProperty   | Modifies the property corresponding to the uris of elasticsearch for the Rest elasticsearch API |
 
-### Kafka
 
-#### Add the Maven dependency
+### Initialization script (since 1.1.0)
+An initialization script file can be provided using the fileInitScript parameter, in which case it will be executed against the local Elasticsearch cluster. 
+The file extension defines the file format: json for JSON format, anything else for custom format.
+
+#### JSON format
+The provided JSON file should contain a list of requests to be sent, one by one, to the Elasticsearch cluster. Each request definition has three properties:
+- the name (in uppercase) of the request method to be used for the current request (one of PUT, POST, DELETE)
+- the path part of the URL (should not start with slash)
+- the payload
+
+The payload should not be defined for DELETE requests.
+Some Elasticsearch requests do not require a payload (eg. POST index/_refresh), in which case define the payload as {}
+
+Example:
+
+To send a POST request to http://localhost:9200/test_index/test_type/_mapping, followed by a DELETE request to http://localhost:9200/test_index/test_type/1:
+```json
+[
+    {
+        "method": "POST",
+        "path": "test_index/test_type/_mapping",
+        "payload": {
+            "test_type": {
+                "properties": {
+                    "name": {
+                        "type": "keyword"
+                    },
+                    "lastModified": {
+                        "type": "date"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "method": "DELETE",
+        "path": "test_index/test_type/1"
+    }
+]
+```
+
+#### Custom format
+
+Each line defines a request to be sent to the Elasticsearch cluster, and it has three parts separated by colon ':'
+
+- the name (in uppercase) of the request method to be used for the current request (one of PUT, POST, DELETE)
+- the path part of the URL (should not start with slash)
+- the JSON to send to Elasticsearch as payload (it should be empty for DELETE requests)
+
+Note: Empty lines are ignored, as well as lines starting with the '#' sign.
+
+Examples :
+
+To send a POST request to http://localhost:9200/test_index/test_type/_mapping:
+```text
+POST:test_index/test_type/_mapping:{ "test_type" : { "properties" : { "name" : { "type" : "keyword" }, "lastModified" : { "type" : "date" } } } }
+```
+
+To send a DELETE request to http://localhost:9200/test_index/test_type/1 without content; note the colon at the end, for there is no JSON data in case of a DELETE.
+```text
+DELETE:test_index/test_type/1:
+```
+
+## Kafka
+
+### Add the Maven dependency
 
 ```xml
 <dependency>
@@ -288,9 +353,9 @@ The name of the spring boot properties can be changed using the following method
 </dependency>
 ```
 
-#### Container Kafka
+### Container Kafka
 
-##### Quick Start
+#### Quick Start
 
 ```java
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -312,7 +377,7 @@ public class ITKafkaTest {
 }
 ```
 
-###### Activate schema registry.
+#### Activate schema registry.
 
 By default, the registry schema is not active. Below is an example to activate the registry schema.
 
@@ -325,7 +390,7 @@ public class ITKafkaTest {
 }
 ```
 
-###### Configuration
+#### Configuration
 
 
 When the docker container has started, the following properties are initialized in the spring boot context:
@@ -344,7 +409,7 @@ The name of the spring boot properties can be changed using the following method
 | withBrokerServersSystemProperty   | Modifies the property corresponding to the uris of the brokers    | spring.kafka.bootstrap-servers                |
 | withSchemaRegistrySystemProperty  | Modifies the property corresponding to the url of schema registry | spring.kafka.properties.schema.registry.url   |
 
-###### Access to urls
+#### Access to urls
 
 | Method                    | Description                                   | Default value         |
 |:-------------------------:|:---------------------------------------------:|:---------------------:|
@@ -352,7 +417,7 @@ The name of the spring boot properties can be changed using the following method
 | getZookeeperServer()      | Returns the url of the zookeeper server       | localhost:33001       |
 | getZookeeperConnect()     | Returns the local url of the zookeeper server | zookeeper:33001       |
 
-###### Topics configuration
+#### Topics configuration
 
 Added the withTopic method to create a topic with the name of the topic, the number of partitions and the type of topic compacted or not.
 
@@ -375,9 +440,9 @@ public class ITKafkaTest {
 ```
 
 
-##### Container Kafka Connect
+### Container Kafka Connect
 
-##### Quick Start
+#### Quick Start
 
 ```java
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -399,7 +464,7 @@ public class ITKafkaTest {
 }
 ```
 
-###### Configuration
+#### Configuration
 
 When the docker container has started, the following properties are initialized in the spring boot context:
 
@@ -448,7 +513,7 @@ Herder initialization method in distributed mode:
 | withStatusStoragePartition        | Number of partitions of the status topic  | 3                     |
 
 
-###### Access to urls
+#### Access to urls
 
 | Method                   | Description                                    | Default value             |
 |:-------------------------:|:---------------------------------------------:|:-------------------------:|

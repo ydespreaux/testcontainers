@@ -23,7 +23,6 @@ package com.github.ydespreaux.testcontainers.mysql;
 import com.github.ydespreaux.testcontainers.common.jdbc.AbstractJdbcContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.Network;
 import org.testcontainers.shaded.org.apache.commons.io.FilenameUtils;
 import org.testcontainers.utility.MountableFile;
 
@@ -33,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,11 +44,11 @@ import static java.lang.String.format;
 /**
  * MySQL container.
  *
- * @param <SELF>
+ * @author Yoann Despréaux
  * @since 1.0.0
  */
 @Slf4j
-public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends AbstractJdbcContainer<SELF> {
+public class MySQLContainer extends AbstractJdbcContainer<MySQLContainer> {
 
     private static final String DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
     private static final String DRIVER_V8_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
@@ -208,19 +208,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends AbstractJ
         }
     }
 
-    /**
-     * Set the network.
-     *
-     * @param network
-     * @return
-     */
-    @Override
-    public SELF withNetwork(Network network) {
-        super.withNetwork(network);
-        return this.self();
-    }
-
-    public SELF withConfigurationOverride(String s) {
+    public MySQLContainer withConfigurationOverride(String s) {
         this.parameters.put(MY_CNF_CONFIG_OVERRIDE_PARAM_NAME, s);
         return this.self();
     }
@@ -231,7 +219,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends AbstractJ
      * @param password
      * @return
      */
-    public SELF withRootPassword(String password) {
+    public MySQLContainer withRootPassword(String password) {
         this.rootPassword = password;
         return this.self();
     }
@@ -242,7 +230,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends AbstractJ
      * @param sqlInit
      * @return
      */
-    public SELF withSqlScriptFile(String sqlInit) {
+    public MySQLContainer withSqlScriptFile(String sqlInit) {
         if (sqlInit == null) {
             return this.self();
         }
@@ -266,7 +254,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends AbstractJ
      * @param directory
      * @return
      */
-    public SELF withSqlScriptDirectory(String directory) {
+    public MySQLContainer withSqlScriptDirectory(String directory) {
         if (directory == null) {
             return this.self();
         }
@@ -334,7 +322,7 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends AbstractJ
      * @return
      */
     @Override
-    public SELF withRegisterSpringbootProperties(boolean registerProperties) {
+    public MySQLContainer withRegisterSpringbootProperties(boolean registerProperties) {
         this.registerSpringbootProperties = registerProperties;
         return this.self();
     }
@@ -367,75 +355,19 @@ public class MySQLContainer<SELF extends MySQLContainer<SELF>> extends AbstractJ
         return format(JDBC_URL, this.getNetworkAliases().get(0), MYSQL_PORT, this.getDatabaseName());
     }
 
-    /**
-     * @param driverClassSystemProperty
-     * @return
-     */
     @Override
-    public SELF withDriverClassSystemProperty(String driverClassSystemProperty) {
-        return super.withDriverClassSystemProperty(driverClassSystemProperty);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MySQLContainer)) return false;
+        if (!super.equals(o)) return false;
+        MySQLContainer that = (MySQLContainer) o;
+        return registerSpringbootProperties == that.registerSpringbootProperties &&
+                Objects.equals(getRootPassword(), that.getRootPassword()) &&
+                Objects.equals(getDriverClassName(), that.getDriverClassName());
     }
 
-    /**
-     * @param urlSystemProperty
-     * @return
-     */
     @Override
-    public SELF withUrlSystemProperty(String urlSystemProperty) {
-        return super.withUrlSystemProperty(urlSystemProperty);
-    }
-
-    /**
-     * @param usernameSystemProperty
-     * @return
-     */
-    @Override
-    public SELF withUsernameSystemProperty(String usernameSystemProperty) {
-        return super.withUsernameSystemProperty(usernameSystemProperty);
-    }
-
-    /**
-     * @param passwordSystemProperty
-     * @return
-     */
-    @Override
-    public SELF withPasswordSystemProperty(String passwordSystemProperty) {
-        return super.withPasswordSystemProperty(passwordSystemProperty);
-    }
-
-    /**
-     * @param platformSystemProperty
-     * @return
-     */
-    @Override
-    public SELF withPlatformSystemProperty(String platformSystemProperty) {
-        return super.withPlatformSystemProperty(platformSystemProperty);
-    }
-
-    /**
-     * @param databaseName
-     * @return
-     */
-    @Override
-    public SELF withDatabaseName(String databaseName) {
-        return super.withDatabaseName(databaseName);
-    }
-
-    /**
-     * @param username
-     * @return
-     */
-    @Override
-    public SELF withUsername(String username) {
-        return super.withUsername(username);
-    }
-
-    /**
-     * @param password
-     * @return
-     */
-    @Override
-    public SELF withPassword(String password) {
-        return super.withPassword(password);
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getRootPassword(), registerSpringbootProperties, getDriverClassName());
     }
 }

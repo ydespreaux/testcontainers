@@ -47,7 +47,7 @@ public class ITKafkaConnectContainerWithSchemaRegistryTest {
 
     @BeforeClass
     public static void onSetupClass() {
-        kafkaConnectContainer = new KafkaConnectContainer<>("4.1.0", kafkaContainer.getKafkaContainer().getInternalURL(), kafkaContainer.getSchemaRegistryContainer().getInternalURL())
+        kafkaConnectContainer = new KafkaConnectContainer("4.1.0", kafkaContainer.getKafkaContainer().getInternalURL(), kafkaContainer.getSchemaRegistryContainer().getInternalURL())
                 .withNetwork(kafkaContainer.getNetwork())
                 .withKeyConverter("io.confluent.connect.avro.AvroConverter")
                 .withValueConverter("io.confluent.connect.avro.AvroConverter");
