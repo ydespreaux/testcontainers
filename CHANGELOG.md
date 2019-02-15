@@ -2,38 +2,28 @@
 
 ## [Unreleased]
 ### Added
+- Add synomnyms configuration
 
 ### Changed
-
-### Fixed
-
-## [1.0.1]
-### Added
-- [lib-testcontainers-elasticsearch] :
-    - Add configuration directory (add method withConfigDirectory(String))
-    - Add scripts initialization (add method withFileInitScript(String))
-
-### Changed
-- Dependency updates
-    - testcontainers from 1.8.3 to 1.10.6
-- Remove deprecated methods
+- Criteria query for jpa
 
 ### Fixed
 
 ### [1.0.0]
 
 - [lib-testcontainers-elasticsearch] :
-    - Add Elasticsearch container
+    - Ajout du container Elasticsearch
 - [lib-testcontainers-kafka] :
-    - Add kafka container
-    - Creating topics when starting the container.
-    - Added docker image confluentinc / cp-schema-registry
-    - ConfluentKafkaConnectContainer container added based on docker image confluentinc / cp-kafka-connect        
+    - Ajout du container Kafka
+    - Création de topics au démarrage du conteneur.
+    - Ajout de l'image docker confluentinc/cp-schema-registry
+    - Ajout du container ConfluentKafkaConnectContainer basée sur l'image docker confluentinc/cp-kafka-connect
 - [lib-testcontainers-cassandra] :
-    - Add cassandra container
-    - Execution of cassandra schema initialization scripts
-    - Addition of the Cassandra container
+    - Execution de scripts d'initialisation du schéma cassandra
+    - Ajout du container Cassandra
 - [lib-testcontainers-mysql] :
-    - Added the MySQL container
-    - Added the withMySqlInitDirectory method to add a set of initialization scripts contained in a directory
-    - Execution of an initialization script of the MySQL database    
+    - Ajout du container MySQL
+    - Ajout de la méthode withMySqlInitDirectory permettant d'ajouter un ensemble de scripts d'initialisation contenus dans un répertoire
+    - Execution d'un script d'initialisation de la base de données MySQL
+- [lib-testcontainers-mssql] :
+    - Ajout du container MSSQLServerContainer basée sur l'image docker microsoft/mssql-server-linux

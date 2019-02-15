@@ -31,10 +31,10 @@ import java.util.Set;
  * This class is used to start a zookeeper container, a kafka container, a schema registry container if it is enabled,
  * and a kafka connect container.
  *
- * @author Yoann Despréaux
- * @since 1.0.0
+ * @param <SELF>
+ * @since 1.1.1
  */
-public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<ConfluentKafkaConnectContainer> {
+public class ConfluentKafkaConnectContainer<SELF extends ConfluentKafkaConnectContainer<SELF>> extends ConfluentKafkaContainer<SELF> {
 
     /**
      *
@@ -79,7 +79,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
     @Override
     public void before() throws Exception {
         super.before();
-        kafkaConnectContainer = new KafkaConnectContainer(
+        kafkaConnectContainer = new KafkaConnectContainer<>(
                 this.getConfluentVersion(),
                 this.getKafkaContainer().getInternalURL(),
                 this.getSchemaRegistryContainer() != null ? this.getSchemaRegistryContainer().getInternalURL() : null)
@@ -137,7 +137,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param groupId
      * @return
      */
-    public ConfluentKafkaConnectContainer withGroupId(String groupId) {
+    public SELF withGroupId(String groupId) {
         if (groupId != null) {
             this.groupId = groupId;
         }
@@ -150,7 +150,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param topic
      * @return
      */
-    public ConfluentKafkaConnectContainer withConfigStorageTopic(String topic) {
+    public SELF withConfigStorageTopic(String topic) {
         if (topic != null) {
             this.configStorageTopic = topic;
         }
@@ -163,7 +163,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param topic
      * @return
      */
-    public ConfluentKafkaConnectContainer withOffsetStorageTopic(String topic) {
+    public SELF withOffsetStorageTopic(String topic) {
         if (topic != null) {
             this.offsetStorageTopic = topic;
         }
@@ -176,7 +176,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param partitions
      * @return
      */
-    public ConfluentKafkaConnectContainer withOffsetStoragePartition(Integer partitions) {
+    public SELF withOffsetStoragePartition(Integer partitions) {
         if (partitions != null) {
             this.offsetStoragePartition = partitions;
         }
@@ -189,7 +189,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param topic
      * @return
      */
-    public ConfluentKafkaConnectContainer withStatusStorageTopic(String topic) {
+    public SELF withStatusStorageTopic(String topic) {
         if (topic != null) {
             this.statusStorageTopic = topic;
         }
@@ -202,7 +202,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param partitions
      * @return
      */
-    public ConfluentKafkaConnectContainer withStatusStoragePartition(Integer partitions) {
+    public SELF withStatusStoragePartition(Integer partitions) {
         if (partitions != null) {
             this.statusStoragePartition = partitions;
         }
@@ -215,7 +215,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param storageFilename
      * @return
      */
-    public ConfluentKafkaConnectContainer withOffsetStorageFilename(String storageFilename) {
+    public SELF withOffsetStorageFilename(String storageFilename) {
         if (storageFilename != null) {
             this.offsetStorageFilename = storageFilename;
         }
@@ -228,7 +228,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param keyConverter
      * @return
      */
-    public ConfluentKafkaConnectContainer withKeyConverter(String keyConverter) {
+    public SELF withKeyConverter(String keyConverter) {
         if (keyConverter != null) {
             this.keyConverter = keyConverter;
         }
@@ -241,7 +241,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param valueConverter
      * @return
      */
-    public ConfluentKafkaConnectContainer withValueConverter(String valueConverter) {
+    public SELF withValueConverter(String valueConverter) {
         if (valueConverter != null) {
             this.valueConverter = valueConverter;
         }
@@ -254,7 +254,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param plugins
      * @return
      */
-    public ConfluentKafkaConnectContainer withPlugins(String plugins) {
+    public SELF withPlugins(String plugins) {
         if (plugins != null) {
             this.plugins.add(plugins);
         }
@@ -267,7 +267,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param restAppSystemProperty
      * @return
      */
-    public ConfluentKafkaConnectContainer withRestAppSystemProperty(String restAppSystemProperty) {
+    public SELF withRestAppSystemProperty(String restAppSystemProperty) {
         this.restAppSystemProperty = restAppSystemProperty;
         return this.self();
     }

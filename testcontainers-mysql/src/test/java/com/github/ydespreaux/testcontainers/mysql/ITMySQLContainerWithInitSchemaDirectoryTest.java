@@ -40,8 +40,7 @@ public class ITMySQLContainerWithInitSchemaDirectoryTest {
     public static MySQLContainer mySqlContainer = new MySQLContainer()
             .withDatabaseName("an_springboot_aa")
             .withSqlScriptDirectory("mysql-directory/schema")
-            .withSqlScriptDirectory("mysql-directory/data")
-            .withStartupTimeoutSeconds(180);
+            .withSqlScriptDirectory("mysql-directory/data");
 
     private Connection connection;
     private Statement statement;

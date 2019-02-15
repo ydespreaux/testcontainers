@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.shaded.org.apache.commons.io.FilenameUtils;
 import org.testcontainers.utility.MountableFile;
 
@@ -46,9 +47,10 @@ import static java.lang.String.format;
 /**
  * The Cassandra container.
  *
+ * @param <SELF>
  */
 @Slf4j
-public class CassandraContainer extends GenericContainer<CassandraContainer> implements IContainer<CassandraContainer> {
+public class CassandraContainer<SELF extends CassandraContainer<SELF>> extends GenericContainer<SELF> implements IContainer<SELF> {
 
     private static final String CASSANDRA_DEFAULT_VERSION = "3.11";
     private static final String CASSANDRA_DEFAULT_BASE_URL = "cassandra";
@@ -153,13 +155,25 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
     }
 
     /**
+     * Set the network
+     *
+     * @param network
+     * @return
+     */
+    @Override
+    public SELF withNetwork(Network network) {
+        super.withNetwork(network);
+        return this.self();
+    }
+
+    /**
      * Set the contact-points property for spring boot properties.
      * By default the property is 'pring.data.cassandra.contact-points'
      *
      * @param contactPointsSystemProperty the contact-points system property
      * @return
      */
-    public CassandraContainer withContactPointsSystemProperty(String contactPointsSystemProperty) {
+    public SELF withContactPointsSystemProperty(String contactPointsSystemProperty) {
         this.contactPointsSystemProperty = contactPointsSystemProperty;
         return this.self();
     }
@@ -171,7 +185,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
      * @param cassandraPortSystemProperty the cassandra port system property
      * @return
      */
-    public CassandraContainer withCassandraPortSystemProperty(String cassandraPortSystemProperty) {
+    public SELF withCassandraPortSystemProperty(String cassandraPortSystemProperty) {
         this.cassandraPortSystemProperty = cassandraPortSystemProperty;
         return this.self();
     }
@@ -182,7 +196,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
      * @param directory
      * @return
      */
-    public CassandraContainer withCqlScriptDirectory(String directory) {
+    public SELF withCqlScriptDirectory(String directory) {
         if (directory == null) {
             return this.self();
         }
@@ -257,7 +271,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
      * @return
      */
     @Override
-    public CassandraContainer withRegisterSpringbootProperties(boolean registerProperties) {
+    public SELF withRegisterSpringbootProperties(boolean registerProperties) {
         this.registerSpringbootProperties = registerProperties;
         return this.self();
     }
@@ -297,22 +311,6 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
      */
     public Integer getInternalCQLNativeTransportPort() {
         return CASSANDRA_DEFAULT_PORT;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CassandraContainer)) return false;
-        if (!super.equals(o)) return false;
-        CassandraContainer that = (CassandraContainer) o;
-        return registerSpringbootProperties == that.registerSpringbootProperties &&
-                Objects.equals(getContactPointsSystemProperty(), that.getContactPointsSystemProperty()) &&
-                Objects.equals(getCassandraPortSystemProperty(), that.getCassandraPortSystemProperty());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), registerSpringbootProperties, getContactPointsSystemProperty(), getCassandraPortSystemProperty());
     }
 
     private static class CassandraWaitStrategy extends AbstractCommandWaitStrategy {

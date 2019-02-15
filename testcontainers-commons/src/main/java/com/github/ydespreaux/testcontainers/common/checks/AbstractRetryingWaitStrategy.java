@@ -34,7 +34,6 @@ import static java.lang.String.format;
 /**
  * Define a retry wait strategy.
  *
- * @author Yoann Despréaux
  * @since 1.0.0
  */
 @Slf4j

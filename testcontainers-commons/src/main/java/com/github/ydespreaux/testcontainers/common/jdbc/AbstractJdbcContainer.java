@@ -24,16 +24,14 @@ import com.github.ydespreaux.testcontainers.common.IContainer;
 import lombok.Getter;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
 /**
- * @param <S>
- * @author Yoann Despréaux
- * @since 1.0.0
+ * @param <SELF>
+ * @since 1.1.2
  */
-public abstract class AbstractJdbcContainer<S extends AbstractJdbcContainer<S>> extends JdbcDatabaseContainer<S> implements IContainer<S> {
+public abstract class AbstractJdbcContainer<SELF extends AbstractJdbcContainer<SELF>> extends JdbcDatabaseContainer<SELF> implements IContainer<SELF> {
 
     private String username = "user";
     private String password = UUID.randomUUID().toString();
@@ -83,7 +81,7 @@ public abstract class AbstractJdbcContainer<S extends AbstractJdbcContainer<S>> 
      * @param driverClassSystemProperty
      * @return
      */
-    public S withDriverClassSystemProperty(String driverClassSystemProperty) {
+    public SELF withDriverClassSystemProperty(String driverClassSystemProperty) {
         this.driverClassSystemProperty = driverClassSystemProperty;
         return this.self();
     }
@@ -92,7 +90,7 @@ public abstract class AbstractJdbcContainer<S extends AbstractJdbcContainer<S>> 
      * @param urlSystemProperty
      * @return
      */
-    public S withUrlSystemProperty(String urlSystemProperty) {
+    public SELF withUrlSystemProperty(String urlSystemProperty) {
         this.urlSystemProperty = urlSystemProperty;
         return this.self();
     }
@@ -101,7 +99,7 @@ public abstract class AbstractJdbcContainer<S extends AbstractJdbcContainer<S>> 
      * @param usernameSystemProperty
      * @return
      */
-    public S withUsernameSystemProperty(String usernameSystemProperty) {
+    public SELF withUsernameSystemProperty(String usernameSystemProperty) {
         this.usernameSystemProperty = usernameSystemProperty;
         return this.self();
     }
@@ -110,7 +108,7 @@ public abstract class AbstractJdbcContainer<S extends AbstractJdbcContainer<S>> 
      * @param passwordSystemProperty
      * @return
      */
-    public S withPasswordSystemProperty(String passwordSystemProperty) {
+    public SELF withPasswordSystemProperty(String passwordSystemProperty) {
         this.passwordSystemProperty = passwordSystemProperty;
         return this.self();
     }
@@ -119,25 +117,25 @@ public abstract class AbstractJdbcContainer<S extends AbstractJdbcContainer<S>> 
      * @param platformSystemProperty
      * @return
      */
-    public S withPlatformSystemProperty(String platformSystemProperty) {
+    public SELF withPlatformSystemProperty(String platformSystemProperty) {
         this.platformSystemProperty = platformSystemProperty;
         return this.self();
     }
 
     @Override
-    public S withDatabaseName(String databaseName) {
+    public SELF withDatabaseName(String databaseName) {
         this.databaseName = databaseName;
         return this.self();
     }
 
     @Override
-    public S withUsername(String username) {
+    public SELF withUsername(String username) {
         this.username = username;
         return this.self();
     }
 
     @Override
-    public S withPassword(String password) {
+    public SELF withPassword(String password) {
         this.password = password;
         return this.self();
     }
@@ -155,26 +153,5 @@ public abstract class AbstractJdbcContainer<S extends AbstractJdbcContainer<S>> 
     @Override
     public String getPassword() {
         return this.password;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AbstractJdbcContainer)) return false;
-        if (!super.equals(o)) return false;
-        AbstractJdbcContainer<?> that = (AbstractJdbcContainer<?>) o;
-        return Objects.equals(getUsername(), that.getUsername()) &&
-                Objects.equals(getPassword(), that.getPassword()) &&
-                Objects.equals(getDatabaseName(), that.getDatabaseName()) &&
-                Objects.equals(getDriverClassSystemProperty(), that.getDriverClassSystemProperty()) &&
-                Objects.equals(getUrlSystemProperty(), that.getUrlSystemProperty()) &&
-                Objects.equals(getUsernameSystemProperty(), that.getUsernameSystemProperty()) &&
-                Objects.equals(getPasswordSystemProperty(), that.getPasswordSystemProperty()) &&
-                Objects.equals(getPlatformSystemProperty(), that.getPlatformSystemProperty());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getUsername(), getPassword(), getDatabaseName(), getDriverClassSystemProperty(), getUrlSystemProperty(), getUsernameSystemProperty(), getPasswordSystemProperty(), getPlatformSystemProperty());
     }
 }

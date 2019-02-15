@@ -35,11 +35,11 @@ import static java.lang.String.format;
 /**
  * Kafka container.
  *
- * @author Yoann Despréaux
+ * @param <SELF>
  * @since 1.0.0
  */
 @Slf4j
-public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer> implements IContainer<KafkaContainer> {
+public class KafkaContainer<SELF extends KafkaContainer<SELF>> extends FixedHostPortGenericContainer<SELF> implements IContainer<SELF> {
 
     private static final String KAFKA_DEFAULT_BASE_URL = "confluentinc/cp-kafka";
 
@@ -115,7 +115,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
      * @param port
      * @return
      */
-    public KafkaContainer withZookeeperPort(Integer port) {
+    public SELF withZookeeperPort(Integer port) {
         withEnv("KAFKA_ZOOKEEPER_CONNECT", format("zookeeper:%d", port));
         return this.self();
     }
@@ -126,7 +126,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
      * @param version
      * @return
      */
-    public KafkaContainer withFormatMessageVersion(String version) {
+    public SELF withFormatMessageVersion(String version) {
         if (version != null) {
             checkFormatMessageVersion(version);
             withEnv("KAFKA_INTER_BROKER_PROTOCOL_VERSION", version);
@@ -148,7 +148,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
      * @param zookeeperHostname
      * @return
      */
-    public KafkaContainer withZookeeperHostname(String zookeeperHostname) {
+    public SELF withZookeeperHostname(String zookeeperHostname) {
         if (zookeeperHostname != null) {
             withCreateContainerCmdModifier(cmd -> cmd.withLinks(new Link(zookeeperHostname, "zookeeper")));
         }
@@ -159,7 +159,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
      * @param brokerServersSystemProperty
      * @return
      */
-    public KafkaContainer withBrokerServersSystemProperty(String brokerServersSystemProperty) {
+    public SELF withBrokerServersSystemProperty(String brokerServersSystemProperty) {
         this.brokerServersSystemProperty = brokerServersSystemProperty;
         return this.self();
     }
@@ -169,7 +169,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
      * @return
      */
     @Override
-    public KafkaContainer withRegisterSpringbootProperties(boolean registerProperties) {
+    public SELF withRegisterSpringbootProperties(boolean registerProperties) {
         this.registerSpringbootProperties = registerProperties;
         return this.self();
     }
@@ -203,28 +203,21 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
     }
 
     /**
+     * @return
+     * @deprecated use getInternalURL()
+     */
+    @Deprecated
+    public String getLocalURL() {
+        return getInternalURL();
+    }
+
+    /**
      * Register spring boot properties.
      */
     protected void registerKafkaEnvironment() {
         if (this.brokerServersSystemProperty != null) {
             System.setProperty(this.brokerServersSystemProperty, getURL());
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof KafkaContainer)) return false;
-        if (!super.equals(o)) return false;
-        KafkaContainer that = (KafkaContainer) o;
-        return brokersMappingPort == that.brokersMappingPort &&
-                registerSpringbootProperties == that.registerSpringbootProperties &&
-                Objects.equals(brokerServersSystemProperty, that.brokerServersSystemProperty);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), brokersMappingPort, registerSpringbootProperties, brokerServersSystemProperty);
     }
 
     /**

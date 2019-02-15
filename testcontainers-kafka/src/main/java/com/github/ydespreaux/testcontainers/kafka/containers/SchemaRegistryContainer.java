@@ -36,11 +36,11 @@ import static java.lang.String.format;
 /**
  * Schema registry container.
  *
- * @author Yoann Despréaux
- * @since 1.0.0
+ * @param <SELF>
+ * @since 1.1.1
  */
 @Slf4j
-public class SchemaRegistryContainer extends FixedHostPortGenericContainer<SchemaRegistryContainer> implements IContainer<SchemaRegistryContainer> {
+public class SchemaRegistryContainer<SELF extends SchemaRegistryContainer<SELF>> extends FixedHostPortGenericContainer<SELF> implements IContainer<SELF> {
 
     private static final String SCHEMA_REGISTRY_DEFAULT_BASE_URL = "confluentinc/cp-schema-registry";
 
@@ -102,7 +102,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
      * @param internalURL
      * @return
      */
-    public SchemaRegistryContainer withZookeeperInternalURL(String internalURL) {
+    public SELF withZookeeperInternalURL(String internalURL) {
         Objects.requireNonNull(internalURL, "Zookeeper url must not be null !!!");
         withEnv(ZOOKEEPER_URL_ENV, internalURL);
         return this.self();
@@ -114,7 +114,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
      * @param internalURL
      * @return
      */
-    public SchemaRegistryContainer withBootstrapServersInternalURL(String internalURL) {
+    public SELF withBootstrapServersInternalURL(String internalURL) {
         Objects.requireNonNull(internalURL, "Bootstrap servers url must not be null !!!");
         withEnv(BOOTSTRAP_SERVERS_URL_ENV, internalURL);
         return this.self();
@@ -124,7 +124,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
      * @param schemaRegistrySystemProperty
      * @return
      */
-    public SchemaRegistryContainer withSchemaRegistrySystemProperty(String schemaRegistrySystemProperty) {
+    public SELF withSchemaRegistrySystemProperty(String schemaRegistrySystemProperty) {
         this.schemaRegistrySystemProperty = schemaRegistrySystemProperty;
         return this.self();
     }
@@ -155,7 +155,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
      * @return
      */
     @Override
-    public SchemaRegistryContainer withRegisterSpringbootProperties(boolean registerProperties) {
+    public SELF withRegisterSpringbootProperties(boolean registerProperties) {
         this.registerSpringbootProperties = registerProperties;
         return this.self();
     }
@@ -188,19 +188,4 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
         return format("http://%s:%d", this.getNetworkAliases().get(0), this.mappingPort);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SchemaRegistryContainer)) return false;
-        if (!super.equals(o)) return false;
-        SchemaRegistryContainer that = (SchemaRegistryContainer) o;
-        return registerSpringbootProperties == that.registerSpringbootProperties &&
-                getMappingPort() == that.getMappingPort() &&
-                Objects.equals(schemaRegistrySystemProperty, that.schemaRegistrySystemProperty);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), registerSpringbootProperties, schemaRegistrySystemProperty, getMappingPort());
-    }
 }
