@@ -7,7 +7,7 @@
 
 ### Fixed
 
-## [1.0.1]
+## [1.1.0]
 ### Added
 - [lib-testcontainers-elasticsearch] :
     - Add configuration directory (add method withConfigDirectory(String))

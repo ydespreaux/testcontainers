@@ -124,8 +124,8 @@ public class ElasticsearchCommandParser {
     }
 
     protected ElasticsearchCommand parseMapCommand(Map<String, Object> command) {
-        if (log.isDebugEnabled()) {
-            log.debug("Parsing command: {}", command);
+        if (log.isInfoEnabled()) {
+            log.info("Parsing command: {}", command);
         }
         ElasticsearchCommand esCommand = new ElasticsearchCommand();
         String methodName = (String) command.get("method");

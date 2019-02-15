@@ -81,8 +81,13 @@ public class ElasticsearchClient {
                 default:
                     throw new ContainerLaunchException(format("Request method %s not supported", command.getRequestMethod()));
             }
-            if (response != null && log.isDebugEnabled()) {
-                log.debug("Execute command {} success : {}", command.toString(), response.body().string());
+            if (response != null) {
+                if (!isValidHttpCode(response.code())) {
+                    throw new ContainerLaunchException(format("Execute command %s success : %s", command.toString(), response.body().string()));
+                }
+                if (log.isInfoEnabled()) {
+                    log.info("Execute command {} success : {}", command.toString(), response.body().string());
+                }
             }
         } catch (IOException e) {
             throw new ContainerLaunchException(format("command '%s' failed : ", command), e);
@@ -118,4 +123,7 @@ public class ElasticsearchClient {
         return client.newCall(request).execute();
     }
 
+    private boolean isValidHttpCode(int httpCode) {
+        return httpCode == 200 || httpCode == 201;
+    }
 }

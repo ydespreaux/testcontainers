@@ -20,7 +20,7 @@ Versions
 
 |   spring-testcontainers    |   testcontainers |
 |:--------------------------:|:----------------:|
-|   1.0.1                    |       1.10.6     |
+|   1.1.0                    |       1.10.6     |
 |   1.0.0                    |       1.8.3      |
 
 ## Prerequisites
@@ -230,7 +230,7 @@ The withCqlScriptDirectory (...) method takes a parameter from the directory pat
 <dependency>
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-elasticsearch</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -277,7 +277,7 @@ The name of the spring boot properties can be changed using the following method
 | withRestUrisSystemProperty   | Modifies the property corresponding to the uris of elasticsearch for the Rest elasticsearch API |
 
 
-### Initialization script (since 1.0.1)
+### Initialization script (since 1.1.0)
 An initialization script file can be provided using the fileInitScript parameter, in which case it will be executed against the local Elasticsearch cluster. 
 The file extension defines the file format: json for JSON format, anything else for custom format.
 
