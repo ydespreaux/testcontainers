@@ -20,18 +20,24 @@
 
 package com.github.ydespreaux.testcontainers.kafka.rule;
 
+import com.github.ydespreaux.testcontainers.kafka.cmd.AclsAddCmd;
+import com.github.ydespreaux.testcontainers.kafka.cmd.AclsOperation;
 import com.github.ydespreaux.testcontainers.kafka.config.TopicConfiguration;
 import com.github.ydespreaux.testcontainers.kafka.containers.KafkaContainer;
 import com.github.ydespreaux.testcontainers.kafka.containers.SchemaRegistryContainer;
 import com.github.ydespreaux.testcontainers.kafka.containers.ZookeeperContainer;
+import com.github.ydespreaux.testcontainers.kafka.security.Certificates;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.rules.ExternalResource;
+import org.springframework.util.StringUtils;
 import org.testcontainers.containers.Network;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
-import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.execCmd;
 import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.getContainerHostname;
 
 
@@ -46,27 +52,14 @@ import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.g
 @Slf4j
 public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> extends ExternalResource implements ConfluentContainer<S> {
 
-    private static final String CONFLUENT_DEFAULT_VERSION = "3.3.1";
-
-    /**
-     *
-     */
-    private static final String BROKER_SERVERS_SYSTEM_PROPERTY = "spring.kafka.bootstrap-servers";
-
-    /**
-     *
-     */
-    private static final String SCHEMA_REGISTRY_SYSTEM_PROPERTY = "spring.kafka.properties.schema.registry.url";
+    static final String CONFLUENT_DEFAULT_VERSION = "5.1.2";
 
     /**
      * Define the confluent version.
      */
     @Getter
     private final String confluentVersion;
-    /**
-     * Default topics list
-     */
-    private final List<TopicConfiguration> topics = new ArrayList<>();
+
     /**
      * Define the network for all containers.
      */
@@ -76,12 +69,12 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
      * Define the zookeeper container.
      */
     @Getter
-    private ZookeeperContainer zookeeperContainer;
+    private final ZookeeperContainer zookeeperContainer;
     /**
      * Dfine the kafka container
      */
     @Getter
-    private KafkaContainer kafkaContainer;
+    private final KafkaContainer kafkaContainer;
     /**
      * Define the schema registry container.
      */
@@ -92,17 +85,8 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
      */
     @Getter
     private boolean schemaRegistryEnabled;
-    private String brokerServersSystemProperty = BROKER_SERVERS_SYSTEM_PROPERTY;
-    private String schemaRegistrySystemProperty = SCHEMA_REGISTRY_SYSTEM_PROPERTY;
-    /**
-     * Register springboot properties in environment
-     */
-    private boolean registerSpringbootProperties = true;
-    /**
-     *
-     */
-    private String formatMessageVersion;
 
+    private String schemaRegistrySystemProperty;
 
     /**
      *
@@ -116,6 +100,13 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
      */
     public ConfluentKafkaContainer(final String confluentVersion) {
         this.confluentVersion = confluentVersion;
+        this.zookeeperContainer = new ZookeeperContainer(this.confluentVersion);
+        this.kafkaContainer = new KafkaContainer(this.confluentVersion)
+                .withRegisterSpringbootProperties(true);
+    }
+
+    public S self() {
+        return (S) this;
     }
 
     /**
@@ -126,7 +117,7 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
      */
     public S withSchemaRegistry(boolean schemaRegistryEnabled) {
         this.schemaRegistryEnabled = schemaRegistryEnabled;
-        return this.self();
+        return self();
     }
 
     /**
@@ -136,15 +127,39 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
      * @return
      */
     public S withRegisterSpringbootProperties(boolean registerProperties) {
-        this.registerSpringbootProperties = registerProperties;
-        return this.self();
+        this.kafkaContainer.withRegisterSpringbootProperties(registerProperties);
+        return self();
+    }
+
+    public S withKafkaServerCertificates(Certificates certificates) {
+        this.kafkaContainer.withKafkaServerCertificates(certificates);
+        return self();
+    }
+
+    public S withKafkaClientCertificates(Certificates certificates) {
+        this.kafkaContainer.withKafkaClientCertificates(certificates);
+        return self();
     }
 
     /**
      * @return
      */
-    protected boolean isRegisterSpringbootProperties() {
-        return this.registerSpringbootProperties;
+    public Certificates getKafkaServerCertificates() {
+        return this.kafkaContainer.getKafkaServerCertificates();
+    }
+
+    /**
+     * @return
+     */
+    public Certificates getKafkaClientCertificates() {
+        return this.kafkaContainer.getKafkaClientCertificates();
+    }
+
+    /**
+     * @return
+     */
+    public boolean isSecured() {
+        return this.kafkaContainer.isSecured();
     }
 
     /**
@@ -155,37 +170,66 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
      */
     public S withNetwork(Network network) {
         this.network = network;
-        return this.self();
+        return self();
+    }
+
+    public S withBrokerServersSystemProperty(String property) {
+        this.kafkaContainer.withBrokerServersSystemProperty(property);
+        return self();
+    }
+
+    public S withSchemaRegistrySystemProperty(String property) {
+        this.schemaRegistrySystemProperty = property;
+        return self();
+    }
+
+    public S withSecurityProtocolSystemProperty(String property) {
+        this.kafkaContainer.withSecurityProtocolSystemProperty(property);
+        return self();
+    }
+
+    public S withKeyPasswordSystemProperty(String property) {
+        this.kafkaContainer.withKeyPasswordSystemProperty(property);
+        return self();
+    }
+
+    public S withKeystoreLocationSystemProperty(String property) {
+        this.kafkaContainer.withKeystoreLocationSystemProperty(property);
+        return self();
+    }
+
+    public S withKeystorePasswordSystemProperty(String property) {
+        this.kafkaContainer.withKeystorePasswordSystemProperty(property);
+        return self();
+    }
+
+    public S withTruststoreLocationSystemProperty(String property) {
+        this.kafkaContainer.withTruststoreLocationSystemProperty(property);
+        return self();
+    }
+
+    public S withTruststorePasswordSystemProperty(String property) {
+        this.kafkaContainer.withTruststorePasswordSystemProperty(property);
+        return self();
+    }
+
+    public S withIdentificationAlgorithmSystemProperty(String property) {
+        this.kafkaContainer.withIdentificationAlgorithmSystemProperty(property);
+        return self();
     }
 
     /**
-     * @param brokerServersSystemProperty
-     * @return
-     */
-    public S withBrokerServersSystemProperty(String brokerServersSystemProperty) {
-        this.brokerServersSystemProperty = brokerServersSystemProperty;
-        return this.self();
-    }
-
-    /**
-     * @param schemaRegistrySystemProperty
-     * @return
-     */
-    public S withSchemaRegistrySystemProperty(String schemaRegistrySystemProperty) {
-        this.schemaRegistrySystemProperty = schemaRegistrySystemProperty;
-        return this.self();
-    }
-
-    /**
+     *
      * @param version
      * @return
      */
     public S withFormatMessageVersion(String version) {
-        this.formatMessageVersion = version;
-        return this.self();
+        this.kafkaContainer.withFormatMessageVersion(version);
+        return self();
     }
 
     /**
+     *
      * @param topicName
      * @param partitions
      * @param compact
@@ -196,14 +240,72 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
     }
 
     /**
+     *
      * @param topic
      * @return
      */
     public S withTopic(TopicConfiguration topic) {
         Objects.requireNonNull(topic);
         Objects.requireNonNull(topic.getName());
-        this.topics.add(topic);
-        return this.self();
+        this.kafkaContainer.withTopics(Arrays.asList(topic));
+        return self();
+    }
+
+    public S withAllAcls(String topic, String group) {
+        return this.withAllAcls(this.kafkaContainer.getKafkaClientCertificates(), topic, group);
+    }
+
+    public S withAllAcls(Certificates certificates, String topic, String group) {
+        return this.withAcls(certificates, AclsOperation.ALL, topic, group);
+    }
+
+    public S withWriteAcls(String topic) {
+        return this.withWriteAcls(this.kafkaContainer.getKafkaClientCertificates(), topic);
+    }
+
+    public S withWriteAcls(Certificates certificates, String topic) {
+        return this.withAcls(certificates, AclsOperation.WRITE, topic, null);
+    }
+
+    public S withDescribeAcls(String topic, String group) {
+        return this.withDescribeAcls(this.kafkaContainer.getKafkaClientCertificates(), topic, group);
+    }
+
+    public S withDescribeAcls(Certificates certificates, String topic, String group) {
+        return this.withAcls(certificates, AclsOperation.DESCRIBE, topic, group);
+    }
+
+    public S withReadAcls(String topic, String group) {
+        return this.withReadAcls(this.kafkaContainer.getKafkaClientCertificates(), topic, group);
+    }
+
+    public S withReadAcls(Certificates certificates, String topic, String group) {
+        return this.withAcls(certificates, AclsOperation.READ, topic, group);
+    }
+
+    public S withAcls(AclsOperation operation, String topic, String group) {
+        return withAcls(this.kafkaContainer.getKafkaClientCertificates(), new AclsOperation[]{operation}, topic, group);
+    }
+
+    public S withAcls(Certificates certificates, AclsOperation operation, String topic, String group) {
+        return withAcls(certificates, new AclsOperation[]{operation}, topic, group);
+    }
+
+    public S withAcls(AclsOperation[] operations, String topic, String group) {
+        return withAcls(this.kafkaContainer.getKafkaClientCertificates(), operations, topic, group);
+    }
+
+    public S withAcls(Certificates certificates, AclsOperation[] operations, String topic, String group) {
+        Objects.requireNonNull(certificates, "Client certificates are not initialized. Call the setClientCertificates method before.");
+        List<AclsAddCmd> commands = new ArrayList<>(operations.length);
+        for (AclsOperation operation : operations) {
+            commands.add(new AclsAddCmd(certificates)
+                    .operation(operation)
+                    .topic(topic)
+                    .group(group));
+        }
+        this.kafkaContainer.withAcls(commands);
+        return self();
     }
 
     /**
@@ -269,30 +371,24 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
             withNetwork(Network.newNetwork());
         }
 
-        zookeeperContainer = new ZookeeperContainer(this.confluentVersion)
-                .withNetwork(network);
+        zookeeperContainer.withNetwork(network);
         zookeeperContainer.start();
 
-        kafkaContainer = new KafkaContainer(this.confluentVersion)
-                .withZookeeperHostname(getContainerHostname(zookeeperContainer))
+        kafkaContainer.withZookeeperHostname(getContainerHostname(zookeeperContainer))
                 .withZookeeperPort(zookeeperContainer.getMappingPort())
-                .withRegisterSpringbootProperties(this.registerSpringbootProperties)
-                .withBrokerServersSystemProperty(this.brokerServersSystemProperty)
-                .withFormatMessageVersion(this.formatMessageVersion)
                 .withNetwork(network);
         kafkaContainer.start();
-        // Create default topics
-        if (!this.topics.isEmpty()) {
-            createTopics(this.topics);
-        }
 
         if (this.schemaRegistryEnabled) {
             schemaRegistryContainer = new SchemaRegistryContainer(this.confluentVersion)
+                    .withRegisterSpringbootProperties(kafkaContainer.registerSpringbootProperties())
+                    .withServerCertificates(kafkaContainer.getKafkaServerCertificates())
                     .withZookeeperInternalURL(zookeeperContainer.getInternalURL())
                     .withBootstrapServersInternalURL(kafkaContainer.getInternalURL())
-                    .withRegisterSpringbootProperties(this.registerSpringbootProperties)
-                    .withSchemaRegistrySystemProperty(this.schemaRegistrySystemProperty)
                     .withNetwork(network);
+            if (StringUtils.hasText(this.schemaRegistrySystemProperty)) {
+                schemaRegistryContainer.withSchemaRegistrySystemProperty(this.schemaRegistrySystemProperty);
+            }
             schemaRegistryContainer.start();
         }
     }
@@ -313,51 +409,7 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
         }
     }
 
-    /**
-     * @param topic
-     */
-    public void createTopic(TopicConfiguration topic) {
-        createTopics(Collections.singletonList(topic));
+    public boolean isRunning() {
+        return this.kafkaContainer.isRunning();
     }
-
-    /**
-     * @param topics
-     */
-    public void createTopics(List<TopicConfiguration> topics) {
-        if (!topics.isEmpty()) {
-            final String zookeeper = this.getZookeeperConnect();
-            topics.forEach(topic ->
-                execCmd(kafkaContainer.getDockerClient(),
-                        kafkaContainer.getContainerId(),
-                        getCreateTopicCmd(topic.getName(), topic.getPartitions(), topic.isCompact(), zookeeper, 1))
-            );
-        }
-    }
-
-    /**
-     * @param topicName
-     * @param partitions
-     * @param kafkaZookeeperConnect
-     * @param brokersCount
-     * @return
-     */
-    private String[] getCreateTopicCmd(String topicName, int partitions, boolean compact, String kafkaZookeeperConnect, int brokersCount) {
-        String[] args = new String[]{
-                "kafka-topics",
-                "--create", "--topic", topicName,
-                "--partitions", String.valueOf(partitions),
-                "--replication-factor", String.valueOf(brokersCount),
-                "--if-not-exists",
-                "--zookeeper", kafkaZookeeperConnect
-        };
-        if (compact) {
-            int orignalLength = args.length;
-            args = Arrays.copyOf(args, orignalLength + 2);
-            args[orignalLength] = "--config";
-            args[orignalLength + 1] = "cleanup.policy=compact";
-        }
-
-        return args;
-    }
-
 }

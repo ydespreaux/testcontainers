@@ -33,10 +33,14 @@ import java.util.List;
 
 import static org.apache.logging.log4j.util.Strings.isEmpty;
 
+/**
+ * @author Yoann Despréaux
+ * @since 1.1.1
+ */
 @Getter
 @Setter
 @ToString
-public class AclsCmd extends AbstractCommand<KafkaContainer> {
+public class AclsAddCmd extends AbstractCommand<KafkaContainer> {
 
     private AclsOperation operation;
     private String user;
@@ -44,31 +48,31 @@ public class AclsCmd extends AbstractCommand<KafkaContainer> {
     private String topic;
     private String cluster;
 
-    public AclsCmd(Certificates certificates) {
+    public AclsAddCmd(Certificates certificates) {
         user(certificates.getUser());
     }
 
-    public AclsCmd user(String user) {
+    public AclsAddCmd user(String user) {
         this.user = user.replaceAll("\\s+", "");
         return this;
     }
 
-    public AclsCmd operation(AclsOperation operation) {
+    public AclsAddCmd operation(AclsOperation operation) {
         this.operation = operation;
         return this;
     }
 
-    public AclsCmd group(String group) {
+    public AclsAddCmd group(String group) {
         this.group = group;
         return this;
     }
 
-    public AclsCmd topic(String topic) {
+    public AclsAddCmd topic(String topic) {
         this.topic = topic;
         return this;
     }
 
-    public AclsCmd cluster(String cluster) {
+    public AclsAddCmd cluster(String cluster) {
         this.cluster = cluster;
         return this;
     }
@@ -77,22 +81,22 @@ public class AclsCmd extends AbstractCommand<KafkaContainer> {
     protected List<String> buildParameters(KafkaContainer container) {
         String zookeeperUrl = container.getEnvMap().get("KAFKA_ZOOKEEPER_CONNECT");
         List<String> parameters = new ArrayList<>(Arrays.asList(
-            "kafka-acls",
-            "--authorizer-properties",
-            "zookeeper.connect=" + zookeeperUrl,
-            "--add",
-            "--allow-principal",
-            "User:" + this.user,
+                "kafka-acls",
+                "--authorizer-properties",
+                "zookeeper.connect=" + zookeeperUrl,
+                "--add",
+                "--allow-principal",
+                "User:" + this.user,
                 "--operation", operation.operationName()));
         if (operation == AclsOperation.ALL
-            || operation == AclsOperation.READ
-            || operation == AclsOperation.DESCRIBE
-            || operation == AclsOperation.DELETE){
+                || operation == AclsOperation.READ
+                || operation == AclsOperation.DESCRIBE
+                || operation == AclsOperation.DELETE){
             parameters.add("--group=" + this.group);
         }
         if (operation == AclsOperation.ALL
-            || operation == AclsOperation.READ
-            || operation == AclsOperation.ALTER_CONFIGS
+                || operation == AclsOperation.READ
+                || operation == AclsOperation.ALTER_CONFIGS
                 || operation == AclsOperation.DESCRIBE_CONFIGS
                 || operation == AclsOperation.DELETE
                 || operation == AclsOperation.WRITE
@@ -101,8 +105,8 @@ public class AclsCmd extends AbstractCommand<KafkaContainer> {
             parameters.add("--topic=" + this.topic);
         }
         if (operation == AclsOperation.CLUSTER_ACTION
-            || operation == AclsOperation.CREATE
-            || operation == AclsOperation.IDEMPOTENT_WRITE
+                || operation == AclsOperation.CREATE
+                || operation == AclsOperation.IDEMPOTENT_WRITE
                 || operation == AclsOperation.DESCRIBE_CONFIGS
                 || operation == AclsOperation.ALTER) {
             parameters.addAll(Arrays.asList(

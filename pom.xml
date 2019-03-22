@@ -4,7 +4,7 @@
 
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-build</artifactId>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>testcontainers-build</name>
     <description>Defined kafka, elasticsearh, mysql, cassandra containers</description>
@@ -327,7 +327,7 @@
                 <sonar.projectKey>${project.artifactId}:${project.version}</sonar.projectKey>
                 <sonar.projectName>${project.name}</sonar.projectName>
                 <sonar.host.url>http://localhost:9000</sonar.host.url>
-                <sonar.login>6e93dff747891bd652333d637f1c31942358c606</sonar.login>
+                <sonar.login>9adb60b57ac3ac310a9b3e423c3d1eae2f4947ce</sonar.login>
             </properties>
         </profile>
     </profiles>

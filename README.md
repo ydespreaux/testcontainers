@@ -20,6 +20,7 @@ Versions
 
 |   spring-testcontainers    |   testcontainers |
 |:--------------------------:|:----------------:|
+|   1.2.0                    |       1.10.6     |
 |   1.1.0                    |       1.10.6     |
 |   1.0.0                    |       1.8.3      |
 
@@ -254,7 +255,7 @@ The URL of the image and the version is configurable. Below is an example to use
 public class ITElasticsearchTest {
 
     @ClassRule
-    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer("6.4.2");
+    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer(Versions.ELASTICSEARCH_VERSION);
 }
 ```
 
@@ -438,6 +439,49 @@ public class ITKafkaTest {
         .withTopic("topic2-compact", 3, true);
 }
 ```
+###### Sécurité SSL (version 1.2.0).
+
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+public class ITKafkaTest {
+
+    public static final Certificates kafkaServerCertificates = new Certificates("secrets/kafka.server.keystore.jks", "0123456789", "secrets/kafka.truststore.jks", "0123456789");
+    public static final Certificates kafkaClientCertificates = new Certificates("secrets/kafka.client.keystore.jks", "0123456789", "secrets/kafka.truststore.jks", "0123456789");
+
+    @ClassRule
+    public static final ConfluentKafkaContainer mySqlContainer = new ConfluentKafkaContainer()
+        .withKafkaServerCertificates(kafkaServerCertificates)
+        .withKafkaClientCertificates(kafkaClientCertificates)
+        .withTopic("TOPIC_1", 1, true)
+        .withAcls(new AclsOperation[]{AclsOperation.READ, AclsOperation.WRITE}, "TOPIC_1", "my-group");
+}    
+```
+
+Lorsque le container docker a démarré, les propriétés correspondantes à la configuration SSL sont initialisées dans le contexte de spring boot:
+
+|   Propriété spring boot                       |   Remarques                                                                                                                       |
+|:---------------------------------------------:|:-----------------------------------------------------------------:|
+|   spring.kafka.security.protocol              | Protocole de sécurité : SSL                                       | 
+|   spring.kafka.ssl.key-password               | Mot de passe du keystore (client)  | 
+|   spring.kafka.ssl.key-store-location         | Chemin du keystore (client)| 
+|   spring.kafka.ssl.key-store-password         | Mot de passe du keystore| 
+|   spring.kafka.ssl.trust-store-location       | Chemin du truststore| 
+|   spring.kafka.ssl.trust-store-password       | Mot de passe du truststore| 
+|   spring.kafka.properties.ssl.endpoint.identification.algorithm | Algorithm d'identification fixé à vide ("")| 
+
+Si le certificat client n'est pas initialisé lors du lancement du conteneur, les propriétés spring boot liées à la configuration SSL ne seront pas initialisées.
+
+Le nom des propriétés spring boot peuvent être modifiées à l'aide des méthodes suivantes:
+
+| Méthode                           | Valeur par défaut                             |
+|:---------------------------------:|:---------------------------------------------:|
+| withSecurityProtocolSystemProperty    | spring.kafka.security.protocol                |
+| withKeyPasswordSystemProperty  |     spring.kafka.ssl.key-password   |
+| withKeystoreLocationSystemProperty  |     spring.kafka.ssl.key-store-location   |
+| withKeystorePasswordSystemProperty  |     spring.kafka.ssl.key-store-password   |
+| withTruststoreLocationSystemProperty  |     spring.kafka.ssl.trust-store-location   |
+| withTruststorePasswordSystemProperty  |     spring.kafka.ssl.trust-store-password   |
+| withIdentificationAlgorithmSystemProperty  | spring.kafka.properties.ssl.endpoint.identification.algorithm   |
 
 
 ### Container Kafka Connect

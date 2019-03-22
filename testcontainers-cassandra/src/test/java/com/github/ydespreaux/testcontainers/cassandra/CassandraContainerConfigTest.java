@@ -20,6 +20,7 @@
 
 package com.github.ydespreaux.testcontainers.cassandra;
 
+import com.github.ydespreaux.testcontainers.cassandra.cmd.CqlScriptCmd;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,11 +40,11 @@ public class CassandraContainerConfigTest {
     public void withCqlScriptDirectoryDbSchema() {
         CassandraContainer container = new CassandraContainer()
                 .withCqlScriptDirectory("db-schema");
-        List<String> scripts = container.getCqlScripts();
+        List<CqlScriptCmd> scripts = container.getCqlScripts();
         assertThat(scripts.size(), is(equalTo(3)));
-        assertThat(scripts.get(0), is(equalTo("/tmp/cassandra-init/db-schema/1-keyspace/keyspace.cql")));
-        assertThat(scripts.get(1), is(equalTo("/tmp/cassandra-init/db-schema/2-data/data.cql")));
-        assertThat(scripts.get(2), is(equalTo("/tmp/cassandra-init/db-schema/model.cql")));
+        assertThat(scripts.get(0).getScript(), is(equalTo("/tmp/cassandra-init/db-schema/1-keyspace/keyspace.cql")));
+        assertThat(scripts.get(1).getScript(), is(equalTo("/tmp/cassandra-init/db-schema/2-data/data.cql")));
+        assertThat(scripts.get(2).getScript(), is(equalTo("/tmp/cassandra-init/db-schema/model.cql")));
     }
 
     @Test
@@ -51,11 +52,11 @@ public class CassandraContainerConfigTest {
         CassandraContainer container = new CassandraContainer()
                 .withCqlScriptDirectory("scripts/keyspace")
                 .withCqlScriptDirectory("scripts/data");
-        List<String> scripts = container.getCqlScripts();
+        List<CqlScriptCmd> scripts = container.getCqlScripts();
         assertThat(scripts.size(), is(equalTo(3)));
-        assertThat(scripts.get(0), is(equalTo("/tmp/cassandra-init/keyspace/ext/ext.cql")));
-        assertThat(scripts.get(1), is(equalTo("/tmp/cassandra-init/keyspace/keyspace.cql")));
-        assertThat(scripts.get(2), is(equalTo("/tmp/cassandra-init/data/data.cql")));
+        assertThat(scripts.get(0).getScript(), is(equalTo("/tmp/cassandra-init/keyspace/ext/ext.cql")));
+        assertThat(scripts.get(1).getScript(), is(equalTo("/tmp/cassandra-init/keyspace/keyspace.cql")));
+        assertThat(scripts.get(2).getScript(), is(equalTo("/tmp/cassandra-init/data/data.cql")));
     }
 
     @Test(expected = IllegalArgumentException.class)

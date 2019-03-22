@@ -20,7 +20,7 @@
 
 package com.github.ydespreaux.testcontainers.common.checks;
 
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Container;
 
 /**
  * Define a waiting strategy.
@@ -29,19 +29,12 @@ import org.testcontainers.containers.GenericContainer;
  * @author Yoann Despréaux
  * @since 1.0.0
  */
-public abstract class AbstractInitOnStartupStrategy extends AbstractCommandWaitStrategy {
+public abstract class AbstractInitOnStartupStrategy<T extends Container> extends AbstractCommandWaitStrategy<T> {
 
     private volatile boolean wasExecutedOnce;
 
-    public AbstractInitOnStartupStrategy(GenericContainer container) {
+    public AbstractInitOnStartupStrategy(T container) {
         super(container);
-    }
-
-    public abstract String[] getScriptToExecute();
-
-    @Override
-    public String[] getCheckCommand() {
-        return getScriptToExecute();
     }
 
     @Override

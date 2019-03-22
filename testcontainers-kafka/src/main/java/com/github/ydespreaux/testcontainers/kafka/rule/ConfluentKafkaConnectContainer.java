@@ -23,9 +23,6 @@ package com.github.ydespreaux.testcontainers.kafka.rule;
 
 import com.github.ydespreaux.testcontainers.kafka.containers.KafkaConnectContainer;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Define the environment for kafka connect container.
  * This class is used to start a zookeeper container, a kafka container, a schema registry container if it is enabled,
@@ -41,26 +38,13 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     private static final String REST_APP_SYSTEM_PROPERTY = "spring.kafka-connect.rest-app";
 
-    private KafkaConnectContainer kafkaConnectContainer;
-
-    private String groupId;
-    private String configStorageTopic;
-    private String offsetStorageTopic;
-    private Integer offsetStoragePartition;
-    private String statusStorageTopic;
-    private Integer statusStoragePartition;
-    private String offsetStorageFilename;
-    private String keyConverter;
-    private String valueConverter;
-    private Set<String> plugins = new HashSet<>();
-    private String restAppSystemProperty = REST_APP_SYSTEM_PROPERTY;
-
+    private final KafkaConnectContainer kafkaConnectContainer;
 
     /**
      *
      */
     public ConfluentKafkaConnectContainer() {
-        super("4.1.0");
+        this("4.1.0");
         this.withFormatMessageVersion("0.11.0");
     }
 
@@ -69,6 +53,8 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer(String confluentVersion) {
         super(confluentVersion);
+        this.kafkaConnectContainer = new KafkaConnectContainer(confluentVersion)
+                .withRestAppSystemProperty(REST_APP_SYSTEM_PROPERTY);
     }
 
     /**
@@ -79,36 +65,24 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
     @Override
     public void before() throws Exception {
         super.before();
-        kafkaConnectContainer = new KafkaConnectContainer(
-                this.getConfluentVersion(),
-                this.getKafkaContainer().getInternalURL(),
-                this.getSchemaRegistryContainer() != null ? this.getSchemaRegistryContainer().getInternalURL() : null)
-                .withNetwork(getNetwork())
-
-                .withGroupId(this.groupId)
-
-                .withConfigStorageTopic(this.configStorageTopic)
-                .withConfigStorageReplicationFactor(1)
-
-                .withOffsetStorageTopic(this.offsetStorageTopic)
-                .withOffsetStoragePartition(this.offsetStoragePartition)
-                .withOffsetStorageReplicationFactor(1)
-
-                .withStatusStorageTopic(this.statusStorageTopic)
-                .withStatusStoragePartition(this.statusStoragePartition)
-                .withStatusStorageReplicationFactor(1)
-
-                .withOffsetStorageFilename(this.offsetStorageFilename)
-
-                .withKeyConverter(this.keyConverter)
-                .withValueConverter(this.valueConverter)
-
-                .withPlugins(this.plugins)
-
-                .withRegisterSpringbootProperties(isRegisterSpringbootProperties())
-                .withRestAppSystemProperty(this.restAppSystemProperty);
+        kafkaConnectContainer.withBrokersServerUrl(this.getKafkaContainer().getInternalURL())
+                .withSchemaRegistryUrl(this.getSchemaRegistryContainer().isRunning() ? this.getSchemaRegistryContainer().getInternalURL() : null)
+                .withNetwork(getNetwork());
 
         kafkaConnectContainer.start();
+    }
+
+    /**
+     * Register the spring boot properties.
+     *
+     * @param registerProperties
+     * @return
+     */
+    @Override
+    public ConfluentKafkaConnectContainer withRegisterSpringbootProperties(boolean registerProperties) {
+        super.withRegisterSpringbootProperties(registerProperties);
+        this.kafkaConnectContainer.withRegisterSpringbootProperties(registerProperties);
+        return this;
     }
 
     /**
@@ -139,7 +113,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withGroupId(String groupId) {
         if (groupId != null) {
-            this.groupId = groupId;
+            this.kafkaConnectContainer.withGroupId(groupId);
         }
         return this.self();
     }
@@ -152,7 +126,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withConfigStorageTopic(String topic) {
         if (topic != null) {
-            this.configStorageTopic = topic;
+            this.kafkaConnectContainer.withConfigStorageTopic(topic);
         }
         return this.self();
     }
@@ -165,7 +139,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withOffsetStorageTopic(String topic) {
         if (topic != null) {
-            this.offsetStorageTopic = topic;
+            this.kafkaConnectContainer.withOffsetStorageTopic(topic);
         }
         return this.self();
     }
@@ -178,7 +152,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withOffsetStoragePartition(Integer partitions) {
         if (partitions != null) {
-            this.offsetStoragePartition = partitions;
+            this.kafkaConnectContainer.withOffsetStoragePartition(partitions);
         }
         return this.self();
     }
@@ -191,7 +165,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withStatusStorageTopic(String topic) {
         if (topic != null) {
-            this.statusStorageTopic = topic;
+            this.kafkaConnectContainer.withStatusStorageTopic(topic);
         }
         return this.self();
     }
@@ -204,7 +178,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withStatusStoragePartition(Integer partitions) {
         if (partitions != null) {
-            this.statusStoragePartition = partitions;
+            this.kafkaConnectContainer.withStatusStoragePartition(partitions);
         }
         return this.self();
     }
@@ -217,7 +191,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withOffsetStorageFilename(String storageFilename) {
         if (storageFilename != null) {
-            this.offsetStorageFilename = storageFilename;
+            this.kafkaConnectContainer.withOffsetStorageFilename(storageFilename);
         }
         return this.self();
     }
@@ -230,7 +204,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withKeyConverter(String keyConverter) {
         if (keyConverter != null) {
-            this.keyConverter = keyConverter;
+            this.kafkaConnectContainer.withKeyConverter(keyConverter);
         }
         return this.self();
     }
@@ -243,7 +217,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withValueConverter(String valueConverter) {
         if (valueConverter != null) {
-            this.valueConverter = valueConverter;
+            this.kafkaConnectContainer.withValueConverter(valueConverter);
         }
         return this.self();
     }
@@ -256,7 +230,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withPlugins(String plugins) {
         if (plugins != null) {
-            this.plugins.add(plugins);
+            this.kafkaConnectContainer.withPlugins(plugins);
         }
         return this.self();
     }
@@ -268,7 +242,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @return
      */
     public ConfluentKafkaConnectContainer withRestAppSystemProperty(String restAppSystemProperty) {
-        this.restAppSystemProperty = restAppSystemProperty;
+        this.kafkaConnectContainer.withRestAppSystemProperty(restAppSystemProperty);
         return this.self();
     }
 }

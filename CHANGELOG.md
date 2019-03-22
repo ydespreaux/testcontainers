@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 ### Added
+    
+### Changed
 
+### Fixed
+
+## [1.2.0]
+### Added
+- [lib-testcontainers-kafka] :
+    - SSL connection
+    - Acls configuration
+    
 ### Changed
 
 ### Fixed

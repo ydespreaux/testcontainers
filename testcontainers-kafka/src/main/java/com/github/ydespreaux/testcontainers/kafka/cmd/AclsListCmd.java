@@ -26,17 +26,21 @@ import com.github.ydespreaux.testcontainers.kafka.containers.KafkaContainer;
 import java.util.Arrays;
 import java.util.List;
 
-public class AclsListAbstractCmd extends AbstractCommand<KafkaContainer> {
+/**
+ * @author Yoann Despréaux
+ * @since 1.1.1
+ */
+public class AclsListCmd extends AbstractCommand<KafkaContainer> {
 
     private final ResourceAcls resource;
 
     private final String value;
 
-    public AclsListAbstractCmd(String value) {
+    public AclsListCmd(String value) {
         this(value, ResourceAcls.TOPIC);
     }
 
-    public AclsListAbstractCmd(String value, ResourceAcls resource) {
+    public AclsListCmd(String value, ResourceAcls resource) {
         this.value = value;
         this.resource = resource;
 

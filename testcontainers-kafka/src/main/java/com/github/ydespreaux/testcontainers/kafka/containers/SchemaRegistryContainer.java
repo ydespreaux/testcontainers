@@ -21,8 +21,10 @@
 package com.github.ydespreaux.testcontainers.kafka.containers;
 
 import com.github.ydespreaux.testcontainers.common.IContainer;
+import com.github.ydespreaux.testcontainers.kafka.security.Certificates;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -42,10 +44,16 @@ import static java.lang.String.format;
 @Slf4j
 public class SchemaRegistryContainer extends FixedHostPortGenericContainer<SchemaRegistryContainer> implements IContainer<SchemaRegistryContainer> {
 
+    private static final String SECRETS_DIRECTORY = "/etc/schema-registry/secrets";
+
     private static final String SCHEMA_REGISTRY_DEFAULT_BASE_URL = "confluentinc/cp-schema-registry";
 
     private static final String ZOOKEEPER_URL_ENV = "SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL";
     private static final String BOOTSTRAP_SERVERS_URL_ENV = "SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS";
+
+    private static final String SCHEMA_REGISTRY_SYSTEM_PROPERTY = "spring.kafka.properties.schema.registry.url";
+
+
     /**
      * Register springboot properties in environment
      */
@@ -54,7 +62,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
     /**
      * Spring boot properties for the schema registry url
      */
-    private String schemaRegistrySystemProperty;
+    private String schemaRegistrySystemProperty = SCHEMA_REGISTRY_SYSTEM_PROPERTY;
 
     /**
      * Schema registry mapping port.
@@ -62,6 +70,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
     @Getter
     private int mappingPort;
 
+    private Certificates serverCertificates;
     /**
      * @param version
      */
@@ -76,6 +85,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
     public SchemaRegistryContainer(String version, int mappingPort) {
         super(SCHEMA_REGISTRY_DEFAULT_BASE_URL + ":" + version);
         this.mappingPort = mappingPort;
+        waitingFor(Wait.forHttp("/"));
     }
 
     /**
@@ -91,10 +101,40 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
                 .withEnv("SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN", "*")
                 .withExposedPorts(this.mappingPort)
                 .withFixedExposedPort(this.mappingPort, this.mappingPort)
-                .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withName("testcontainsers-schema-registry-" + UUID.randomUUID()))
-                .waitingFor(Wait.forHttp("/"));
+                .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withName("testcontainsers-schema-registry-" + UUID.randomUUID()));
+        if (isSecured()) {
+            this.withEnv("SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL", "SSL")
+                    .withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM", "");
+        }
     }
 
+    public boolean isSecured() {
+        return this.serverCertificates != null;
+    }
+
+    public SchemaRegistryContainer withServerCertificates(Certificates certificates) {
+        if (certificates == null) {
+            return this;
+        }
+        if (this.serverCertificates != null) {
+            throw new IllegalArgumentException("Certificates already initialized");
+        }
+        this.serverCertificates = certificates;
+
+        this.addFileSystemBind(certificates.getKeystorePath().toString(), SECRETS_DIRECTORY + '/' + certificates.getKeystorePath().getFileName(), BindMode.READ_ONLY);
+        if (certificates.getTruststorePath() != null) {
+            this.addFileSystemBind(certificates.getTruststorePath().toString(), SECRETS_DIRECTORY + '/' + certificates.getTruststorePath().getFileName(), BindMode.READ_ONLY);
+        }
+
+        withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_LOCATION", SECRETS_DIRECTORY + '/' + certificates.getKeystorePath().getFileName());
+        withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_PASSWORD", certificates.getKeystorePassword());
+        withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_KEY_PASSWORD", certificates.getKeystorePassword());
+        if (certificates.getTruststorePath() != null) {
+            withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_LOCATION", SECRETS_DIRECTORY + '/' + certificates.getTruststorePath().getFileName());
+            withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_PASSWORD", certificates.getTruststorePassword());
+        }
+        return this;
+    }
 
     /**
      * Set the zookeeper url for local container.
@@ -105,7 +145,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
     public SchemaRegistryContainer withZookeeperInternalURL(String internalURL) {
         Objects.requireNonNull(internalURL, "Zookeeper url must not be null !!!");
         withEnv(ZOOKEEPER_URL_ENV, internalURL);
-        return this.self();
+        return this;
     }
 
     /**
@@ -117,7 +157,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
     public SchemaRegistryContainer withBootstrapServersInternalURL(String internalURL) {
         Objects.requireNonNull(internalURL, "Bootstrap servers url must not be null !!!");
         withEnv(BOOTSTRAP_SERVERS_URL_ENV, internalURL);
-        return this.self();
+        return this;
     }
 
     /**
@@ -126,12 +166,13 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
      */
     public SchemaRegistryContainer withSchemaRegistrySystemProperty(String schemaRegistrySystemProperty) {
         this.schemaRegistrySystemProperty = schemaRegistrySystemProperty;
-        return this.self();
+        return this;
     }
 
     /**
      * Start the container.
      *
+     * @throws Exception
      */
     @Override
     public void start() {
@@ -157,7 +198,7 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
     @Override
     public SchemaRegistryContainer withRegisterSpringbootProperties(boolean registerProperties) {
         this.registerSpringbootProperties = registerProperties;
-        return this.self();
+        return this;
     }
 
     /**
@@ -194,13 +235,11 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
         if (!(o instanceof SchemaRegistryContainer)) return false;
         if (!super.equals(o)) return false;
         SchemaRegistryContainer that = (SchemaRegistryContainer) o;
-        return registerSpringbootProperties == that.registerSpringbootProperties &&
-                getMappingPort() == that.getMappingPort() &&
-                Objects.equals(schemaRegistrySystemProperty, that.schemaRegistrySystemProperty);
+        return getMappingPort() == that.getMappingPort();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), registerSpringbootProperties, schemaRegistrySystemProperty, getMappingPort());
+        return Objects.hash(super.hashCode(), getMappingPort());
     }
 }

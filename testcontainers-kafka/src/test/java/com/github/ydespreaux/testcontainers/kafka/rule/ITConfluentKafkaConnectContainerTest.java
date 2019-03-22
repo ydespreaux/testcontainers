@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.notNullValue;
 public class ITConfluentKafkaConnectContainerTest {
 
     @ClassRule
-    public static final ConfluentKafkaConnectContainer container = new ConfluentKafkaConnectContainer()
+    public static final ConfluentKafkaConnectContainer container = new ConfluentKafkaConnectContainer("5.1.0")
             .withSchemaRegistry(true)
             .withKeyConverter("org.apache.kafka.connect.storage.StringConverter")
             .withValueConverter("io.confluent.connect.avro.AvroConverter");

@@ -20,17 +20,15 @@
 mkdir secrets
 cd secrets
 
-echo 0123456789 > creds
-
 # Create keystores
-keytool -keystore server.keystore.jks -alias localhost -validity 1000 -genkey -keyalg RSA -ext SAN=DNS:localhost,DNS:kafka -dname "CN=s3serverlocal, OU=test, O=suez, L=test,ST=laposte, C=fr" -keypass 0123456789 -storepass 0123456789
-keytool -keystore client.keystore.jks -alias localhost -validity 1000 -genkey -keyalg RSA -ext SAN=DNS:localhost,DNS:kafka -dname "CN=s3clientlocal, OU=test, O=suez, L=test,ST=laposte, C=fr" -keypass 0123456789 -storepass 0123456789
+keytool -keystore server.keystore.jks -alias localhost -validity 1000 -genkey -keyalg RSA -ext SAN=DNS:localhost,DNS:kafka -dname "CN=kafka.server, OU=test, O=test, L=test,ST=github, C=fr" -keypass 0123456789 -storepass 0123456789
+keytool -keystore client.keystore.jks -alias localhost -validity 1000 -genkey -keyalg RSA -ext SAN=DNS:localhost,DNS:kafka -dname "CN=kafka.client, OU=test, O=test, L=test,ST=github, C=fr" -keypass 0123456789 -storepass 0123456789
 
 # Create a CA
-openssl req -new -x509 -keyout server.ca.key -out server.ca.cert -days 1000 -passout pass:0123456789 -subj "//C=fr\ST=laposte\L=test\O=suez\CN=s3ca"
+openssl req -new -x509 -keyout server.ca.key -out server.ca.cert -days 1000 -passout pass:0123456789 -subj "//C=fr\ST=github\L=test\O=test\CN=kafka.ca"
 
 # Create a truststore and import the CA
-keytool -keystore server.truststore.jks -alias CARoot -import -file server.ca.cert -keypass 0123456789 -storepass 0123456789 -noprompt
+keytool -keystore truststore.jks -alias CARoot -import -file server.ca.cert -keypass 0123456789 -storepass 0123456789 -noprompt
 
 # Export cert:
 keytool -keystore server.keystore.jks -alias localhost -certreq -file server.cert -keypass 0123456789 -storepass 0123456789

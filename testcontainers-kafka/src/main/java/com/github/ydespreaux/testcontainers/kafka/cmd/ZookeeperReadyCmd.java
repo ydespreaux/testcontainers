@@ -22,9 +22,9 @@ package com.github.ydespreaux.testcontainers.kafka.cmd;
 
 import com.github.ydespreaux.testcontainers.common.cmd.AbstractCommand;
 import com.github.ydespreaux.testcontainers.kafka.containers.ZookeeperContainer;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,11 +36,18 @@ import java.util.List;
  */
 @Getter
 @Setter
-@Builder
-public class ZookeeperHealthCmd extends AbstractCommand<ZookeeperContainer> {
+@ToString
+public class ZookeeperReadyCmd extends AbstractCommand<ZookeeperContainer> {
 
-    @Builder.Default
-    private long timeoutInSeconds = 30;
+    private long timeoutInSeconds;
+
+    public ZookeeperReadyCmd() {
+        this(30);
+    }
+
+    public ZookeeperReadyCmd(int timeoutInSeconds) {
+        this.timeoutInSeconds = timeoutInSeconds;
+    }
 
     @Override
     protected List<String> buildParameters(ZookeeperContainer container) {

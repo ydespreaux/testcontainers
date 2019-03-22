@@ -20,13 +20,14 @@
 
 package com.github.ydespreaux.testcontainers.cassandra;
 
+import com.github.ydespreaux.testcontainers.cassandra.cmd.CassandraReadyCmd;
+import com.github.ydespreaux.testcontainers.cassandra.cmd.CqlScriptCmd;
 import com.github.ydespreaux.testcontainers.common.IContainer;
 import com.github.ydespreaux.testcontainers.common.checks.AbstractCommandWaitStrategy;
-import com.github.ydespreaux.testcontainers.common.utils.ContainerUtils;
+import com.github.ydespreaux.testcontainers.common.cmd.Command;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.shaded.org.apache.commons.io.FilenameUtils;
 import org.testcontainers.utility.MountableFile;
@@ -42,6 +43,7 @@ import java.util.stream.Stream;
 
 import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.containerLogsConsumer;
 import static java.lang.String.format;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 /**
  * The Cassandra container.
@@ -55,12 +57,14 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
     private static final int CASSANDRA_DEFAULT_PORT = 9042;
     private static final int STARTER_TIMOUT_SECONDS = 120;
 
+    private static final Command<CassandraContainer> readyCmd = new CassandraReadyCmd();
+
     private static final String DB_SCHEMA_DIRECTORY = "/tmp/cassandra-init";
     /**
      *
      */
     @Getter
-    private final List<String> cqlScripts = new ArrayList<>();
+    private final List<CqlScriptCmd> cqlScripts = new ArrayList<>();
 
     /**
      * Register springboot properties in environment
@@ -111,7 +115,17 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
         this.withLogConsumer(containerLogsConsumer(log))
                 .withExposedPorts(CASSANDRA_DEFAULT_PORT)
                 .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withName("testcontainsers-cassandra-" + UUID.randomUUID()));
-        this.waitingFor(new CassandraWaitStrategy(this).withStartupTimeout(Duration.ofSeconds(this.getStartupTimeoutSeconds())));
+        this.waitingFor(new AbstractCommandWaitStrategy(this) {
+            /**
+             * Returns the schell command that must be executed.
+             *
+             * @return
+             */
+            @Override
+            public List<Command> getCheckCommands() {
+                return Arrays.asList(readyCmd);
+            }
+        }).withStartupTimeout(Duration.ofSeconds(this.getStartupTimeoutSeconds()));
     }
 
     /**
@@ -140,12 +154,9 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
     public void start() {
         super.start();
         // Execute all cql scripts
-        this.cqlScripts.forEach(script -> {
-            ContainerUtils.ExecCmdResult result = ContainerUtils.execCmd(this.getDockerClient(), this.getContainerId(), new String[]{"cqlsh", "-f", script});
-            if (result.getExitCode() != 0) {
-                throw new ContainerLaunchException(format("Execute script %s failed", script), new Exception(result.getOutput()));
-            }
-        });
+        if (!isEmpty(this.cqlScripts)) {
+            this.cqlScripts.forEach(cmd -> cmd.execute(this));
+        }
         if (registerSpringbootProperties()) {
             // Register cassandra environment
             registerCassandraEnvironment();
@@ -221,7 +232,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
                     .forEach(path -> {
                         if (path.toFile().isFile()) {
                             String subPath = path.subpath(rootDirectory.getNameCount(), path.getNameCount()).toString().replaceAll("\\\\", "/");
-                            this.cqlScripts.add(DB_SCHEMA_DIRECTORY + "/" + rootDirectory.getFileName() + "/" + subPath);
+                            this.cqlScripts.add(new CqlScriptCmd(DB_SCHEMA_DIRECTORY + "/" + rootDirectory.getFileName() + "/" + subPath));
                         } else {
                             scanScriptsImpl(rootDirectory, path);
                         }
@@ -314,28 +325,4 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
     public int hashCode() {
         return Objects.hash(super.hashCode(), registerSpringbootProperties, getContactPointsSystemProperty(), getCassandraPortSystemProperty());
     }
-
-    private static class CassandraWaitStrategy extends AbstractCommandWaitStrategy {
-
-        /**
-         * Default constructor.
-         *
-         * @param container
-         */
-        public CassandraWaitStrategy(GenericContainer container) {
-            super(container);
-        }
-
-        /**
-         * Returns the schell command that must be executed.
-         *
-         * @return
-         */
-        @Override
-        public String[] getCheckCommand() {
-            return new String[]{"cqlsh", "-e", "SELECT release_version FROM system.local"};
-        }
-
-    }
-
 }

@@ -20,19 +20,57 @@
 
 package com.github.ydespreaux.testcontainers.kafka.cmd;
 
-import com.github.ydespreaux.testcontainers.kafka.config.TopicConfiguration;
+import com.github.ydespreaux.testcontainers.common.cmd.AbstractCommand;
+import com.github.ydespreaux.testcontainers.kafka.containers.KafkaContainer;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
  * @author Yoann Despréaux
  * @since 1.1.1
  */
-public class KafkaHealthCmd extends CreateTopicCmd {
+public class KafkaReadyCmd extends AbstractCommand<KafkaContainer> {
 
-    private static final TopicConfiguration healthTopic = new TopicConfiguration("_health", 1, false);
+    private static final int DEFAULT_TIMOUT = 30;
 
-    public KafkaHealthCmd() {
-        super(healthTopic);
+    private int timeoutInSeconds;
+
+    public KafkaReadyCmd() {
+        this(DEFAULT_TIMOUT);
     }
 
+    public KafkaReadyCmd(int timeoutInSeconds) {
+        this.timeoutInSeconds = timeoutInSeconds;
+    }
+
+    @Override
+    protected List<String> buildParameters(KafkaContainer container) {
+        if (container.isSecured()) {
+            return Arrays.asList(
+                    "cub",
+                    "kafka-ready",
+                    "-b",
+                    container.getInternalURL(),
+                    "-c",
+                    "/etc/kafka/kafka.properties",
+                    "-s",
+                    "SSL",
+                    "1",
+                    String.valueOf(timeoutInSeconds)
+            );
+
+        } else {
+            return Arrays.asList(
+                    "cub",
+                    "kafka-ready",
+                    "-b",
+                    container.getInternalURL(),
+                    "1",
+                    String.valueOf(timeoutInSeconds)
+            );
+        }
+    }
 }
+
