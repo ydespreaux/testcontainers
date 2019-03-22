@@ -21,11 +21,7 @@
 package com.github.ydespreaux.testcontainers.kafka.rule;
 
 
-import com.github.ydespreaux.testcontainers.common.cmd.AbstractCommand;
-import com.github.ydespreaux.testcontainers.common.cmd.Command;
-import com.github.ydespreaux.testcontainers.common.utils.ContainerUtils;
 import com.github.ydespreaux.testcontainers.kafka.config.TopicConfiguration;
-import com.github.ydespreaux.testcontainers.kafka.containers.KafkaContainer;
 import kafka.admin.AdminUtils;
 import kafka.utils.ZkUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -34,11 +30,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -55,25 +49,6 @@ public class ITConfluentKafkaContainerTest {
         assertThat(container.getBootstrapServers(), is(notNullValue()));
         assertThat(container.getZookeeperServer(), is(notNullValue()));
         assertThat(container.getSchemaRegistryServers(), is(notNullValue()));
-
-        Command<KafkaContainer> command = new AbstractCommand<KafkaContainer>() {
-            @Override
-            protected List<String> buildParameters(KafkaContainer container) {
-                return Arrays.asList(
-                        "kafka-topics",
-                        "--describe",
-                        "--zookeeper",
-                        container.getEnvMap().get("KAFKA_ZOOKEEPER_CONNECT"),
-                        "--topic",
-                        "_health");
-            }
-        };
-        ContainerUtils.ExecCmdResult result = command.execute(container.getKafkaContainer());
-        assertThat(result.getExitCode(), is(equalTo(0)));
-        assertThat(result.getOutput(), containsString("Topic:_health"));
-        assertThat(result.getOutput(), containsString("PartitionCount:1"));
-        assertThat(result.getOutput(), containsString("ReplicationFactor:1"));
-
     }
 
     @Test

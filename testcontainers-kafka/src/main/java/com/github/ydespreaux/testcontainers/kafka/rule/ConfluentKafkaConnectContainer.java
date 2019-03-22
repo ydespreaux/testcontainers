@@ -22,6 +22,7 @@ package com.github.ydespreaux.testcontainers.kafka.rule;
 
 
 import com.github.ydespreaux.testcontainers.kafka.containers.KafkaConnectContainer;
+import com.github.ydespreaux.testcontainers.kafka.security.Certificates;
 
 /**
  * Define the environment for kafka connect container.
@@ -33,19 +34,16 @@ import com.github.ydespreaux.testcontainers.kafka.containers.KafkaConnectContain
  */
 public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<ConfluentKafkaConnectContainer> {
 
-    /**
-     *
-     */
-    private static final String REST_APP_SYSTEM_PROPERTY = "spring.kafka-connect.rest-app";
-
     private final KafkaConnectContainer kafkaConnectContainer;
+
+    private Certificates kafkaConnectCertificates;
+
 
     /**
      *
      */
     public ConfluentKafkaConnectContainer() {
-        this("4.1.0");
-        this.withFormatMessageVersion("0.11.0");
+        this(CONFLUENT_DEFAULT_VERSION);
     }
 
     /**
@@ -53,8 +51,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer(String confluentVersion) {
         super(confluentVersion);
-        this.kafkaConnectContainer = new KafkaConnectContainer(confluentVersion)
-                .withRestAppSystemProperty(REST_APP_SYSTEM_PROPERTY);
+        this.kafkaConnectContainer = new KafkaConnectContainer(confluentVersion);
     }
 
     /**
@@ -65,10 +62,14 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
     @Override
     public void before() throws Exception {
         super.before();
-        kafkaConnectContainer.withBrokersServerUrl(this.getKafkaContainer().getInternalURL())
-                .withSchemaRegistryUrl(this.getSchemaRegistryContainer().isRunning() ? this.getSchemaRegistryContainer().getInternalURL() : null)
-                .withNetwork(getNetwork());
+        kafkaConnectContainer
+                .withNetwork(getNetwork())
+                .withBrokersServerUrl(this.getKafkaContainer().getInternalURL())
+                .withServerCertificates(this.kafkaConnectCertificates == null ? this.getKafkaServerCertificates() : this.kafkaConnectCertificates);
+        if (this.isSchemaRegistryEnabled()) {
+            kafkaConnectContainer.withSchemaRegistryUrl(this.getSchemaRegistryContainer().getInternalURL());
 
+        }
         kafkaConnectContainer.start();
     }
 
@@ -82,6 +83,15 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
     public ConfluentKafkaConnectContainer withRegisterSpringbootProperties(boolean registerProperties) {
         super.withRegisterSpringbootProperties(registerProperties);
         this.kafkaConnectContainer.withRegisterSpringbootProperties(registerProperties);
+        return this;
+    }
+
+    /**
+     * @param certificates
+     * @return
+     */
+    public ConfluentKafkaConnectContainer withKafkaConnectCertificates(Certificates certificates) {
+        this.kafkaConnectCertificates = certificates;
         return this;
     }
 
@@ -105,6 +115,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         return this.kafkaConnectContainer.getURL();
     }
 
+
     /**
      * Set the group id.
      *
@@ -115,12 +126,11 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (groupId != null) {
             this.kafkaConnectContainer.withGroupId(groupId);
         }
-        return this.self();
+        return this;
     }
 
     /**
      * Set the topic's name for the offsets storage topic.
-     *
      * @param topic
      * @return
      */
@@ -128,7 +138,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (topic != null) {
             this.kafkaConnectContainer.withConfigStorageTopic(topic);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -141,12 +151,11 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (topic != null) {
             this.kafkaConnectContainer.withOffsetStorageTopic(topic);
         }
-        return this.self();
+        return this;
     }
 
     /**
      * Set the number of partitions for the offsets storage topic.
-     *
      * @param partitions
      * @return
      */
@@ -154,12 +163,11 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (partitions != null) {
             this.kafkaConnectContainer.withOffsetStoragePartition(partitions);
         }
-        return this.self();
+        return this;
     }
 
     /**
      * Set the topic's name for the status storage topic.
-     *
      * @param topic
      * @return
      */
@@ -167,7 +175,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (topic != null) {
             this.kafkaConnectContainer.withStatusStorageTopic(topic);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -180,7 +188,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (partitions != null) {
             this.kafkaConnectContainer.withStatusStoragePartition(partitions);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -193,7 +201,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (storageFilename != null) {
             this.kafkaConnectContainer.withOffsetStorageFilename(storageFilename);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -206,7 +214,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (keyConverter != null) {
             this.kafkaConnectContainer.withKeyConverter(keyConverter);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -219,7 +227,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (valueConverter != null) {
             this.kafkaConnectContainer.withValueConverter(valueConverter);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -232,7 +240,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         if (plugins != null) {
             this.kafkaConnectContainer.withPlugins(plugins);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -243,6 +251,6 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      */
     public ConfluentKafkaConnectContainer withRestAppSystemProperty(String restAppSystemProperty) {
         this.kafkaConnectContainer.withRestAppSystemProperty(restAppSystemProperty);
-        return this.self();
+        return this;
     }
 }

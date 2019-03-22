@@ -35,7 +35,7 @@ public class ITMySQLContainerTest {
 
     @ClassRule
     public static MySQLContainer mySqlContainer = new MySQLContainer()
-            .withDatabaseName("an_database")
+            .withDatabaseName("my_database")
             .withUsername("db_user")
             .withPassword("changeme")
             .withRootPassword("rootpwd")
@@ -53,7 +53,7 @@ public class ITMySQLContainerTest {
         assertThat(System.getProperty(mySqlContainer.getUsernameSystemProperty()), is(equalTo("db_user")));
         assertThat(System.getProperty(mySqlContainer.getPasswordSystemProperty()), is(equalTo("changeme")));
         assertThat(System.getProperty(mySqlContainer.getPlatformSystemProperty()), is(equalTo("mysql")));
-        assertThat(System.getProperty(mySqlContainer.getUrlSystemProperty()), is(equalTo("jdbc:mysql://" + mySqlContainer.getContainerIpAddress() + ":" + mySqlContainer.getPort() + "/an_database?useSSL=false")));
+        assertThat(System.getProperty(mySqlContainer.getUrlSystemProperty()), is(equalTo("jdbc:mysql://" + mySqlContainer.getContainerIpAddress() + ":" + mySqlContainer.getPort() + "/my_database?useSSL=false")));
     }
 
     @Test

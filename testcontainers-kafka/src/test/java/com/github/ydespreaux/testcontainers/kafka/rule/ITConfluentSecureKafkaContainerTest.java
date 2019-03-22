@@ -23,7 +23,7 @@ package com.github.ydespreaux.testcontainers.kafka.rule;
 
 import com.github.ydespreaux.testcontainers.common.cmd.Command;
 import com.github.ydespreaux.testcontainers.common.utils.ContainerUtils;
-import com.github.ydespreaux.testcontainers.kafka.CertDefinition;
+import com.github.ydespreaux.testcontainers.kafka.CertsDefinition;
 import com.github.ydespreaux.testcontainers.kafka.cmd.AclsListCmd;
 import com.github.ydespreaux.testcontainers.kafka.cmd.AclsOperation;
 import com.github.ydespreaux.testcontainers.kafka.config.TopicConfiguration;
@@ -44,8 +44,8 @@ public class ITConfluentSecureKafkaContainerTest {
 
     @ClassRule
     public static final ConfluentKafkaContainer container = new ConfluentKafkaContainer()
-            .withKafkaServerCertificates(CertDefinition.kafkaServerCertificates)
-            .withKafkaClientCertificates(CertDefinition.kafkaClientCertificates)
+            .withKafkaServerCertificates(CertsDefinition.kafkaServerCertificates)
+            .withKafkaClientCertificates(CertsDefinition.kafkaClientCertificates)
         .withSchemaRegistry(true);
 
     @Test
@@ -57,18 +57,18 @@ public class ITConfluentSecureKafkaContainerTest {
 
         assertThat(System.getProperty("spring.kafka.bootstrap-servers"), is(equalTo(container.getBootstrapServers())));
         assertThat(System.getProperty("spring.kafka.security.protocol"), is(equalTo("SSL")));
-        assertThat(System.getProperty("spring.kafka.ssl.key-password"), is(equalTo(CertDefinition.kafkaClientCertificates.getKeystorePassword())));
-        assertThat(System.getProperty("spring.kafka.ssl.key-store-location"), is(equalTo("file:" + CertDefinition.kafkaClientCertificates.getKeystorePath().toString())));
-        assertThat(System.getProperty("spring.kafka.ssl.key-store-password"), is(equalTo(CertDefinition.kafkaClientCertificates.getKeystorePassword())));
-        assertThat(System.getProperty("spring.kafka.ssl.trust-store-location"), is(equalTo("file:" + CertDefinition.kafkaClientCertificates.getTruststorePath().toString())));
-        assertThat(System.getProperty("spring.kafka.ssl.trust-store-password"), is(equalTo(CertDefinition.kafkaClientCertificates.getTruststorePassword())));
+        assertThat(System.getProperty("spring.kafka.ssl.key-password"), is(equalTo(CertsDefinition.kafkaClientCertificates.getKeystorePassword())));
+        assertThat(System.getProperty("spring.kafka.ssl.key-store-location"), is(equalTo("file:" + CertsDefinition.kafkaClientCertificates.getKeystorePath().toString())));
+        assertThat(System.getProperty("spring.kafka.ssl.key-store-password"), is(equalTo(CertsDefinition.kafkaClientCertificates.getKeystorePassword())));
+        assertThat(System.getProperty("spring.kafka.ssl.trust-store-location"), is(equalTo("file:" + CertsDefinition.kafkaClientCertificates.getTruststorePath().toString())));
+        assertThat(System.getProperty("spring.kafka.ssl.trust-store-password"), is(equalTo(CertsDefinition.kafkaClientCertificates.getTruststorePassword())));
         assertThat(System.getProperty("spring.kafka.properties.ssl.endpoint.identification.algorithm"), is(equalTo("")));
         assertThat(System.getProperty("spring.kafka.properties.schema.registry.url"), is(equalTo(container.getSchemaRegistryServers())));
 
         Command<KafkaContainer> aclsCommand = new AclsListCmd("kafka-cluster", AclsListCmd.ResourceAcls.CLUSTER);
         ContainerUtils.ExecCmdResult result = aclsCommand.execute(container.getKafkaContainer());
         assertThat(result.getOutput(), containsString("Cluster:LITERAL:kafka-cluster"));
-        assertThat(result.getOutput(), containsString("User:CN=cn.kafka.server.fr,OU=None,O=laposte,L=None,ST=None,C=fr has Allow permission for operations: All from hosts: *"));
+        assertThat(result.getOutput(), containsString("User:CN=cn.kafka.server.fr,OU=None,O=github,L=None,ST=None,C=fr has Allow permission for operations: All from hosts: *"));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class ITConfluentSecureKafkaContainerTest {
         container.withReadAcls("topic-acls-read", "my-group");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls-read").execute(container.getKafkaContainer());
         assertThat(output.getOutput(), containsString("Topic:LITERAL:topic-acls-read"));
-        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=laposte,L=None,ST=None,C=fr has Allow permission for operations: Read from hosts: *"));
+        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=github,L=None,ST=None,C=fr has Allow permission for operations: Read from hosts: *"));
     }
 
     @Test
@@ -86,7 +86,7 @@ public class ITConfluentSecureKafkaContainerTest {
         container.withWriteAcls("topic-acls-write");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls-write").execute(container.getKafkaContainer());
         assertThat(output.getOutput(), containsString("Topic:LITERAL:topic-acls-write"));
-        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=laposte,L=None,ST=None,C=fr has Allow permission for operations: Write from hosts: *"));
+        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=github,L=None,ST=None,C=fr has Allow permission for operations: Write from hosts: *"));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class ITConfluentSecureKafkaContainerTest {
         container.withDescribeAcls("topic-acls-describe", "my-group");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls-describe").execute(container.getKafkaContainer());
         assertThat(output.getOutput(), containsString("Topic:LITERAL:topic-acls-describe"));
-        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=laposte,L=None,ST=None,C=fr has Allow permission for operations: Describe from hosts: *"));
+        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=github,L=None,ST=None,C=fr has Allow permission for operations: Describe from hosts: *"));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class ITConfluentSecureKafkaContainerTest {
         container.withAllAcls("topic-acls-all", "my-group");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls-all").execute(container.getKafkaContainer());
         assertThat(output.getOutput(), containsString("Topic:LITERAL:topic-acls-all"));
-        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=laposte,L=None,ST=None,C=fr has Allow permission for operations: All from hosts: *"));
+        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=github,L=None,ST=None,C=fr has Allow permission for operations: All from hosts: *"));
     }
 
     @Test
@@ -113,8 +113,8 @@ public class ITConfluentSecureKafkaContainerTest {
         container.withAcls(new AclsOperation[]{AclsOperation.READ, AclsOperation.DESCRIBE, AclsOperation.WRITE}, "topic-acls", "my-group");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls").execute(container.getKafkaContainer());
         assertThat(output.getOutput(), containsString("Topic:LITERAL:topic-acls"));
-        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=laposte,L=None,ST=None,C=fr has Allow permission for operations: Read from hosts: *"));
-        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=laposte,L=None,ST=None,C=fr has Allow permission for operations: Describe from hosts: *"));
-        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=laposte,L=None,ST=None,C=fr has Allow permission for operations: Write from hosts: *"));
+        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=github,L=None,ST=None,C=fr has Allow permission for operations: Read from hosts: *"));
+        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=github,L=None,ST=None,C=fr has Allow permission for operations: Describe from hosts: *"));
+        assertThat(output.getOutput(), containsString("User:CN=cn.kafka.client.fr,OU=None,O=github,L=None,ST=None,C=fr has Allow permission for operations: Write from hosts: *"));
     }
 }

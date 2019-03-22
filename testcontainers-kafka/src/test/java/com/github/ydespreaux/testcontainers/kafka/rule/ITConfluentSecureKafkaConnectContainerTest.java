@@ -21,7 +21,7 @@
 package com.github.ydespreaux.testcontainers.kafka.rule;
 
 
-import com.github.ydespreaux.testcontainers.kafka.CertDefinition;
+import com.github.ydespreaux.testcontainers.kafka.CertsDefinition;
 import com.github.ydespreaux.testcontainers.kafka.domain.WorkerInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.ClassRule;
@@ -41,7 +41,7 @@ public class ITConfluentSecureKafkaConnectContainerTest {
 
     @ClassRule
     public static final ConfluentKafkaConnectContainer container = new ConfluentKafkaConnectContainer()
-            .withKafkaServerCertificates(CertDefinition.kafkaServerCertificates)
+            .withKafkaServerCertificates(CertsDefinition.kafkaServerCertificates)
         .withSchemaRegistry(true)
         .withKeyConverter("org.apache.kafka.connect.storage.StringConverter")
         .withValueConverter("io.confluent.connect.avro.AvroConverter");

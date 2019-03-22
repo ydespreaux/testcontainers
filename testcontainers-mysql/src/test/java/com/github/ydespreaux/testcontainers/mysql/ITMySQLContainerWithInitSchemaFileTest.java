@@ -38,7 +38,7 @@ public class ITMySQLContainerWithInitSchemaFileTest {
 
     @ClassRule
     public static MySQLContainer mySqlContainer = new MySQLContainer()
-            .withDatabaseName("an_springboot_aa")
+            .withDatabaseName("my_database")
             .withSqlScriptFile("mysql-init/user-schema-init.sql")
             .withSqlScriptFile("mysql-init/workstation-schema-init.sql")
             .withStartupTimeoutSeconds(180);

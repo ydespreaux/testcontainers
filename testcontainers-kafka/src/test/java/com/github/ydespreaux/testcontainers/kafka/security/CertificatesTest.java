@@ -33,14 +33,14 @@ public class CertificatesTest {
     @Test
     public void certificates() {
         Certificates certificates = new Certificates(
-                "secrets/server.keystore.jks",
+                "secrets/kafka.server.keystore.jks",
                 "0123456789",
-                "secrets/truststore.jks",
+                "secrets/kafka.truststore.jks",
                 "0123456789");
         assertThat(certificates.getKeystorePath(), is(notNullValue()));
         assertThat(certificates.getTruststorePassword(), is(notNullValue()));
         assertThat(certificates.getKeystorePassword(), is(equalTo("0123456789")));
         assertThat(certificates.getTruststorePassword(), is(equalTo("0123456789")));
-        assertThat(certificates.getUser(), is(equalTo("CN=kafka.server, OU=test, O=test, L=test, ST=github, C=fr")));
+        assertThat(certificates.getUser(), is(equalTo("CN=cn.kafka.server.fr, OU=None, O=github, L=None, ST=None, C=fr")));
     }
 }

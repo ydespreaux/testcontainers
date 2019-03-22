@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS an_springboot_aa;
+CREATE DATABASE IF NOT EXISTS my_database;
 
-USE an_springboot_aa;
+USE my_database;
 
 CREATE TABLE IF NOT EXISTS tb_workstation (
   id            INT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
