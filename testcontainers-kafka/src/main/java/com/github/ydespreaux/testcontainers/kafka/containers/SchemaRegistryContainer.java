@@ -172,7 +172,6 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
     /**
      * Start the container.
      *
-     * @throws Exception
      */
     @Override
     public void start() {
