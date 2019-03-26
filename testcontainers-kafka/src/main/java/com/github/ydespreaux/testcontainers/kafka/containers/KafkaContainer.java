@@ -294,7 +294,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
     }
 
     public KafkaContainer withSecurityProtocolSystemProperty(String securityProtocolSystemProperty) {
-        this.systemPropertyMap.put(BROKER_SERVERS_SYSTEM_PROPERTY, securityProtocolSystemProperty);
+        this.systemPropertyMap.put(SECURITY_PROTOCOL_SYSTEM_PROPERTY, securityProtocolSystemProperty);
         return this;
     }
 

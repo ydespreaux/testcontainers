@@ -7,6 +7,8 @@
 
 ### Fixed
 
+- The call to the withSecurityProtocolSystemProperty () method injects the broker URL instead of the 'SSL' value 
+
 ## [1.2.0]
 ### Added
 - [lib-testcontainers-kafka] :
