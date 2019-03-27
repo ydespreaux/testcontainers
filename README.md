@@ -457,23 +457,23 @@ public class ITKafkaTest {
 }    
 ```
 
-Lorsque le container docker a démarré, les propriétés correspondantes à la configuration SSL sont initialisées dans le contexte de spring boot:
+When the docker container has started, the properties corresponding to the SSL configuration are initialized in the context of spring boot:
 
-|   Propriété spring boot                       |   Remarques                                                                                                                       |
+|   Spring boot property                       |   Description                                                                                                                       |
 |:---------------------------------------------:|:-----------------------------------------------------------------:|
-|   spring.kafka.security.protocol              | Protocole de sécurité : SSL                                       | 
-|   spring.kafka.ssl.key-password               | Mot de passe du keystore (client)  | 
-|   spring.kafka.ssl.key-store-location         | Chemin du keystore (client)| 
-|   spring.kafka.ssl.key-store-password         | Mot de passe du keystore| 
-|   spring.kafka.ssl.trust-store-location       | Chemin du truststore| 
-|   spring.kafka.ssl.trust-store-password       | Mot de passe du truststore| 
-|   spring.kafka.properties.ssl.endpoint.identification.algorithm | Algorithm d'identification fixé à vide ("")| 
+|   spring.kafka.security.protocol              | Security protocol : SSL                                       | 
+|   spring.kafka.ssl.key-password               | Keystore password (client)  | 
+|   spring.kafka.ssl.key-store-location         | Keystore location (client)| 
+|   spring.kafka.ssl.key-store-password         | Keystore password| 
+|   spring.kafka.ssl.trust-store-location       | Truststore location| 
+|   spring.kafka.ssl.trust-store-password       | Truststore password| 
+|   spring.kafka.properties.ssl.endpoint.identification.algorithm | Identification algorithm set to empty ("")| 
 
-Si le certificat client n'est pas initialisé lors du lancement du conteneur, les propriétés spring boot liées à la configuration SSL ne seront pas initialisées.
+If the client certificate is not initialized when the container is launched, the spring boot properties related to the SSL configuration will not be initialized.
 
-Le nom des propriétés spring boot peuvent être modifiées à l'aide des méthodes suivantes:
+The name of the spring boot properties can be changed using the following methods:
 
-| Méthode                           | Valeur par défaut                             |
+| Methode                          | Default value                             |
 |:---------------------------------:|:---------------------------------------------:|
 | withSecurityProtocolSystemProperty    | spring.kafka.security.protocol                |
 | withKeyPasswordSystemProperty  |     spring.kafka.ssl.key-password   |
