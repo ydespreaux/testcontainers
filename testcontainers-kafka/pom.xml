@@ -15,9 +15,6 @@
         <version>1.2.1-SNAPSHOT</version>
     </parent>
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
         <spring-kafka.version>2.1.5.RELEASE</spring-kafka.version>
         <confluent.version>4.0.0</confluent.version>
         <avro.version>1.8.2</avro.version>

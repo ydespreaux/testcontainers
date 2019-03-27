@@ -5,6 +5,8 @@
     
 ### Changed
 
+- Migration to jdk 11
+
 ### Fixed
 
 - The call to the withSecurityProtocolSystemProperty () method injects the broker URL instead of the 'SSL' value 
