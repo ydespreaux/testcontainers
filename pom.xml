@@ -38,7 +38,7 @@
         <springboot.version>2.1.0.RELEASE</springboot.version>
         <apache.commons.io.version>2.6</apache.commons.io.version>
         <apache.commons.lang.version>2.6</apache.commons.lang.version>
-        <testcontainers.version>1.10.6</testcontainers.version>
+        <testcontainers.version>1.11.1</testcontainers.version>
         <okhttp.version>3.13.1</okhttp.version>
         <commons-lang3.version>3.7</commons-lang3.version>
         <lombok.version>1.18.2</lombok.version>
@@ -163,7 +163,7 @@
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>junit-jupiter</artifactId>
-                <version>1.11.1</version>
+                <version>${testcontainers.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
