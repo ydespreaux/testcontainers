@@ -57,7 +57,6 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
     /**
      * Start all containers.
      *
-     * @throws Exception
      */
     @Override
     public void start() {

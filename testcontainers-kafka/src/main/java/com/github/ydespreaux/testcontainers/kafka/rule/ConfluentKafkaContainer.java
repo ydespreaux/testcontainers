@@ -363,7 +363,6 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
     /**
      * Start all containers.
      *
-     * @throws Exception
      */
     @Override
     public void before() {
