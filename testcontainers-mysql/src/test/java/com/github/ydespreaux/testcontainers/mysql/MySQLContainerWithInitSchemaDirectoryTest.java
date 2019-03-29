@@ -20,12 +20,12 @@
 
 package com.github.ydespreaux.testcontainers.mysql;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.*;
 import java.util.Properties;
@@ -33,10 +33,11 @@ import java.util.Properties;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@RunWith(SpringRunner.class)
-public class ITMySQLContainerWithInitSchemaDirectoryTest {
+@Tag("integration")
+@Testcontainers
+public class MySQLContainerWithInitSchemaDirectoryTest {
 
-    @ClassRule
+    @Container
     public static MySQLContainer mySqlContainer = new MySQLContainer()
             .withDatabaseName("my_database")
             .withSqlScriptDirectory("mysql-directory/schema")
@@ -46,12 +47,12 @@ public class ITMySQLContainerWithInitSchemaDirectoryTest {
     private Connection connection;
     private Statement statement;
 
-    @Before
+    @BeforeEach
     public void onSetup() throws SQLException {
         connection = createConnection();
     }
 
-    @After
+    @AfterEach
     public void onTeardown() throws SQLException {
         if (statement != null) {
             statement.close();
@@ -62,7 +63,7 @@ public class ITMySQLContainerWithInitSchemaDirectoryTest {
     }
 
     @Test
-    public void checkDbSchema() throws SQLException {
+    void checkDbSchema() throws SQLException {
         statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM tb_user");
         assertThat(resultSet.next(), is(true));
@@ -74,7 +75,7 @@ public class ITMySQLContainerWithInitSchemaDirectoryTest {
     }
 
     @Test
-    public void checkWorkstationDbSchema() throws SQLException {
+    void checkWorkstationDbSchema() throws SQLException {
         statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM tb_workstation");
         assertThat(resultSet.next(), is(true));

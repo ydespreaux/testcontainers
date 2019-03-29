@@ -22,22 +22,20 @@ package com.github.ydespreaux.testcontainers.cassandra;
 
 import com.github.ydespreaux.testcontainers.cassandra.cmd.CqlScriptCmd;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Slf4j
-@RunWith(SpringRunner.class)
 public class CassandraContainerConfigTest {
 
     @Test
-    public void withCqlScriptDirectoryDbSchema() {
+    void withCqlScriptDirectoryDbSchema() {
         CassandraContainer container = new CassandraContainer()
                 .withCqlScriptDirectory("db-schema");
         List<CqlScriptCmd> scripts = container.getCqlScripts();
@@ -48,7 +46,7 @@ public class CassandraContainerConfigTest {
     }
 
     @Test
-    public void withCqlScriptDirectoryScripts() {
+    void withCqlScriptDirectoryScripts() {
         CassandraContainer container = new CassandraContainer()
                 .withCqlScriptDirectory("scripts/keyspace")
                 .withCqlScriptDirectory("scripts/data");
@@ -59,9 +57,9 @@ public class CassandraContainerConfigTest {
         assertThat(scripts.get(2).getScript(), is(equalTo("/tmp/cassandra-init/data/data.cql")));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void withCqlScriptDirectoryWithFileResource() {
-        new CassandraContainer()
-                .withCqlScriptDirectory("db-schema/1-keyspace/1-schema.cql");
+    @Test
+    void withCqlScriptDirectoryWithFileResource() {
+        assertThrows(IllegalArgumentException.class, () -> new CassandraContainer()
+                .withCqlScriptDirectory("db-schema/1-keyspace/1-schema.cql"));
     }
 }

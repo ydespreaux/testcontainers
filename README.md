@@ -18,11 +18,12 @@ Container types:
 Versions
 -----------
 
-|   spring-testcontainers    |   testcontainers |
-|:--------------------------:|:----------------:|
-|   1.2.0                    |       1.10.6     |
-|   1.1.0                    |       1.10.6     |
-|   1.0.0                    |       1.8.3      |
+|   spring-testcontainers    |   testcontainers | JUnit version compatibility |
+|:--------------------------:|:----------------:|--------------:|
+|   1.2.1                    |       1.10.6     | Junit 4, Junit 5 |
+|   1.2.0                    |       1.10.6     | Junit 4 |
+|   1.1.0                    |       1.10.6     | Junit 4 |
+|   1.0.0                    |       1.8.3      | Junit 4 |
 
 ## Prerequisites
 

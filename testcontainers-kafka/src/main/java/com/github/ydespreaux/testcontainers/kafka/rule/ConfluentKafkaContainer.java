@@ -357,7 +357,7 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        before();
+        start();
     }
 
     /**
@@ -366,7 +366,24 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
      * @throws Exception
      */
     @Override
-    public void before() throws Exception {
+    public void before() {
+        start();
+    }
+
+    /**
+     * Stop and remove all containers.
+     */
+    @Override
+    public void after() {
+        stop();
+    }
+
+    public boolean isRunning() {
+        return this.kafkaContainer.isRunning();
+    }
+
+    @Override
+    public void start() {
         if (this.network == null) {
             withNetwork(Network.newNetwork());
         }
@@ -393,11 +410,8 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
         }
     }
 
-    /**
-     * Stop and remove all containers.
-     */
     @Override
-    public void after() {
+    public void stop() {
         if (schemaRegistryContainer != null && schemaRegistryContainer.isRunning()) {
             this.schemaRegistryContainer.stop();
         }
@@ -407,9 +421,5 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
         if (zookeeperContainer != null && zookeeperContainer.isRunning()) {
             zookeeperContainer.stop();
         }
-    }
-
-    public boolean isRunning() {
-        return this.kafkaContainer.isRunning();
     }
 }

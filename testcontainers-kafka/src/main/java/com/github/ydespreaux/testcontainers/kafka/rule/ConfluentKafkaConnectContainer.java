@@ -60,8 +60,8 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @throws Exception
      */
     @Override
-    public void before() throws Exception {
-        super.before();
+    public void start() {
+        super.start();
         kafkaConnectContainer
                 .withNetwork(getNetwork())
                 .withBrokersServerUrl(this.getKafkaContainer().getInternalURL())
@@ -72,6 +72,18 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
         }
         kafkaConnectContainer.start();
     }
+
+    /**
+     * Destroy all containers.
+     */
+    @Override
+    public void stop() {
+        if (kafkaConnectContainer != null && kafkaConnectContainer.isRunning()) {
+            kafkaConnectContainer.stop();
+        }
+        super.stop();
+    }
+
 
     /**
      * Register the spring boot properties.
@@ -93,17 +105,6 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
     public ConfluentKafkaConnectContainer withKafkaConnectCertificates(Certificates certificates) {
         this.kafkaConnectCertificates = certificates;
         return this;
-    }
-
-    /**
-     * Destroy all containers.
-     */
-    @Override
-    public void after() {
-        if (kafkaConnectContainer != null && kafkaConnectContainer.isRunning()) {
-            kafkaConnectContainer.stop();
-        }
-        super.after();
     }
 
     /**

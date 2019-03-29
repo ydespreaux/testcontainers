@@ -29,27 +29,28 @@ import com.github.ydespreaux.testcontainers.kafka.cmd.AclsOperation;
 import com.github.ydespreaux.testcontainers.kafka.config.TopicConfiguration;
 import com.github.ydespreaux.testcontainers.kafka.containers.KafkaContainer;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @Slf4j
-@RunWith(SpringRunner.class)
-public class ITConfluentSecureKafkaContainerTest {
+@Tag("integration")
+@Testcontainers
+public class ConfluentSecureKafkaContainerTest {
 
 
-    @ClassRule
+    @Container
     public static final ConfluentKafkaContainer container = new ConfluentKafkaContainer()
             .withKafkaServerCertificates(CertsDefinition.kafkaServerCertificates)
             .withKafkaClientCertificates(CertsDefinition.kafkaClientCertificates)
         .withSchemaRegistry(true);
 
     @Test
-    public void containerEnvironment() {
+    void containerEnvironment() {
         assertThat(container.isRunning(), is(true));
         assertThat(container.getBootstrapServers(), is(notNullValue()));
         assertThat(container.getZookeeperServer(), is(notNullValue()));
@@ -72,7 +73,7 @@ public class ITConfluentSecureKafkaContainerTest {
     }
 
     @Test
-    public void addAclsRead() {
+    void addAclsRead() {
         container.withTopic(new TopicConfiguration("topic-acls-read", 1, false));
         container.withReadAcls("topic-acls-read", "my-group");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls-read").execute(container.getKafkaContainer());
@@ -81,7 +82,7 @@ public class ITConfluentSecureKafkaContainerTest {
     }
 
     @Test
-    public void addAclsWrite() {
+    void addAclsWrite() {
         container.withTopic(new TopicConfiguration("topic-acls-write", 1, false));
         container.withWriteAcls("topic-acls-write");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls-write").execute(container.getKafkaContainer());
@@ -90,7 +91,7 @@ public class ITConfluentSecureKafkaContainerTest {
     }
 
     @Test
-    public void addAclsDescribe() {
+    void addAclsDescribe() {
         container.withTopic(new TopicConfiguration("topic-acls-describe", 1, false));
         container.withDescribeAcls("topic-acls-describe", "my-group");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls-describe").execute(container.getKafkaContainer());
@@ -99,7 +100,7 @@ public class ITConfluentSecureKafkaContainerTest {
     }
 
     @Test
-    public void addAclsAll() {
+    void addAclsAll() {
         container.withTopic(new TopicConfiguration("topic-acls-all", 1, false));
         container.withAllAcls("topic-acls-all", "my-group");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls-all").execute(container.getKafkaContainer());
@@ -108,7 +109,7 @@ public class ITConfluentSecureKafkaContainerTest {
     }
 
     @Test
-    public void addAcls() {
+    void addAcls() {
         container.withTopic(new TopicConfiguration("topic-acls", 1, false));
         container.withAcls(new AclsOperation[]{AclsOperation.READ, AclsOperation.DESCRIBE, AclsOperation.WRITE}, "topic-acls", "my-group");
         ContainerUtils.ExecCmdResult output = new AclsListCmd("topic-acls").execute(container.getKafkaContainer());

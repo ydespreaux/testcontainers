@@ -20,18 +20,15 @@
 
 package com.github.ydespreaux.testcontainers.kafka.security;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@RunWith(SpringRunner.class)
 public class CertificatesTest {
 
     @Test
-    public void certificates() {
+    void certificates() {
         Certificates certificates = new Certificates(
                 "secrets/kafka.server.keystore.jks",
                 "0123456789",

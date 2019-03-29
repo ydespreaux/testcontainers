@@ -6,6 +6,7 @@
 ### Changed
 
 - Migration to jdk 11
+- Compatibility Junit 5
 
 ### Fixed
 

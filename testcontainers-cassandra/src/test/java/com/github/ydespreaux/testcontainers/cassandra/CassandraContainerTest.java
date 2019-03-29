@@ -21,9 +21,9 @@
 package com.github.ydespreaux.testcontainers.cassandra;
 
 import com.datastax.driver.core.*;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.*;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 import java.util.Map;
@@ -31,62 +31,63 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@RunWith(SpringRunner.class)
-public class ITCassandraContainerTest {
+@Tag("integration")
+@Testcontainers
+public class CassandraContainerTest {
 
-    @ClassRule
+    @Container
     public static final CassandraContainer cassandraContainer = new CassandraContainer().withCqlScriptDirectory("db-schema");
     private static final String KEYSPACE = "testcontainers_unit";
     private static final String TABLE = "model";
     private static Cluster cluster;
     private Session session;
 
-    @BeforeClass
-    public static void onSetupClass() {
+    @BeforeAll
+    static void onSetupClass() {
         cluster = Cluster.builder()
                 .addContactPoint(cassandraContainer.getContainerIpAddress())
                 .withPort(cassandraContainer.getCQLNativeTransportPort())
                 .build();
     }
 
-    @AfterClass
-    public static void onTeardownClass() {
+    @AfterAll
+    static void onTeardownClass() {
         if (cluster != null) {
             cluster.close();
         }
     }
 
-    @Before
-    public void onSetup() {
+    @BeforeEach
+    void onSetup() {
         session = cluster.connect(KEYSPACE);
     }
 
-    @After
-    public void onTeardown() {
+    @AfterEach
+    void onTeardown() {
         if (session != null) {
             session.close();
         }
     }
 
     @Test
-    public void environmentSystemProperty() {
+    void environmentSystemProperty() {
         assertThat(System.getProperty(cassandraContainer.getContactPointsSystemProperty()), is(equalTo("localhost")));
         assertThat(System.getProperty(cassandraContainer.getCassandraPortSystemProperty()), is(equalTo(String.valueOf(cassandraContainer.getMappedPort(9042)))));
     }
 
 
     @Test
-    public void getURL() {
+    void getURL() {
         assertThat(cassandraContainer.getURL(), is(equalTo(cassandraContainer.getContainerIpAddress())));
     }
 
     @Test
-    public void getInternalURL() {
+    void getInternalURL() {
         assertThat(cassandraContainer.getInternalURL(), is(equalTo(cassandraContainer.getNetworkAliases().get(0))));
     }
 
     @Test
-    public void checkCassandraSchema() {
+    void checkCassandraSchema() {
         KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(KEYSPACE);
         assertThat(keyspaceMetadata, notNullValue());
         assertThat(keyspaceMetadata.getName(), is(equalTo(KEYSPACE)));
@@ -108,7 +109,7 @@ public class ITCassandraContainerTest {
     }
 
     @Test
-    public void checkCassandraData() {
+    void checkCassandraData() {
         List<Row> result = session.execute("select * from model").all();
         assertThat(result.size(), is(equalTo(4)));
     }

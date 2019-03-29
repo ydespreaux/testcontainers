@@ -23,10 +23,10 @@ package com.github.ydespreaux.testcontainers.elasticsearch;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -35,12 +35,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-@RunWith(SpringRunner.class)
-public class ITElasticsearchContainer_568_Test {
+@Tag("integration")
+@Testcontainers
+public class ElasticsearchContainer_642_Test {
 
-    @ClassRule
-    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer("5.6.8")
-            .withConfigDirectory("config");
+    @Container
+    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer("6.4.2")
+            .withConfigDirectory("config")
+            .withFileInitScript("scripts/init.script")
+            .withFileInitScript("scripts/init.json");
 
     private static String testUrl(String path) {
         return elasticContainer.getURL() + path;
@@ -56,26 +59,55 @@ public class ITElasticsearchContainer_568_Test {
     }
 
     @Test
-    public void environmentSystemProperty() {
+    void environmentSystemProperty() {
         assertThat(System.getProperty(elasticContainer.getJestUrisSystemProperty()), is(equalTo("http://" + elasticContainer.getContainerIpAddress() + ":" + elasticContainer.getHttpPort())));
         assertThat(System.getProperty(elasticContainer.getRestUrisSystemProperty()), is(equalTo("http://" + elasticContainer.getContainerIpAddress() + ":" + elasticContainer.getHttpPort())));
     }
 
     @Test
-    public void getURL() {
+    void getURL() {
         assertThat(elasticContainer.getURL(), is(equalTo("http://" + elasticContainer.getContainerIpAddress() + ":" + elasticContainer.getHttpPort())));
     }
 
     @Test
-    public void getInternalURL() {
+    void getInternalURL() {
         assertThat(elasticContainer.getInternalURL(), is(equalTo("http://" + elasticContainer.getNetworkAliases().get(0) + ":" + 9200)));
     }
 
     @Test
-    public void health() throws IOException {
+    void health() throws IOException {
         Response response = call("/_cluster/health");
         assertThat(response.isSuccessful(), is(true));
     }
+
+    @Test
+    void getIndex() throws IOException {
+        Response response = call("/load_test_index");
+        assertThat(response.isSuccessful(), is(true));
+        assertThat(response.code(), is(equalTo(200)));
+    }
+
+    @Test
+    void getIndexFromResource() throws IOException {
+        Response response = call("/index-1");
+        assertThat(response.isSuccessful(), is(true));
+        assertThat(response.code(), is(equalTo(200)));
+    }
+
+    @Test
+    void getTemplateFromResource() throws IOException {
+        Response response = call("/_template/template2");
+        assertThat(response.isSuccessful(), is(true));
+        assertThat(response.code(), is(equalTo(200)));
+    }
+
+    @Test
+    void getDocument() throws IOException {
+        Response response = call("/load_test_index/test_type/2");
+        assertThat(response.isSuccessful(), is(true));
+        assertThat(response.code(), is(equalTo(200)));
+    }
+
 
     private Response call(String path) throws IOException {
         OkHttpClient client = createHttpClient();
