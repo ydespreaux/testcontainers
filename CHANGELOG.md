@@ -5,6 +5,12 @@
     
 ### Changed
 
+### Fixed
+
+## [1.2.1]
+    
+### Changed
+
 - Migration to jdk 11
 - Compatibility Junit 5
 
