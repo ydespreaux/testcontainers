@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 ### Added
+    
+### Changed
 
+### Fixed
+
+## [1.2.1]
+    
+### Changed
+
+- Migration to jdk 11
+- Compatibility Junit 5
+
+### Fixed
+
+- The call to the withSecurityProtocolSystemProperty () method injects the broker URL instead of the 'SSL' value 
+
+## [1.2.0]
+### Added
+- [lib-testcontainers-kafka] :
+    - SSL connection
+    - Acls configuration
+    
 ### Changed
 
 ### Fixed

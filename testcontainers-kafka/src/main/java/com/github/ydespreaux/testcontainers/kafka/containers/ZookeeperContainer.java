@@ -22,10 +22,14 @@ package com.github.ydespreaux.testcontainers.kafka.containers;
 
 import com.github.ydespreaux.testcontainers.common.IContainer;
 import com.github.ydespreaux.testcontainers.common.checks.AbstractCommandWaitStrategy;
+import com.github.ydespreaux.testcontainers.common.cmd.Command;
+import com.github.ydespreaux.testcontainers.kafka.cmd.ZookeeperReadyCmd;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -43,6 +47,8 @@ import static java.lang.String.format;
 public class ZookeeperContainer extends FixedHostPortGenericContainer<ZookeeperContainer> implements IContainer<ZookeeperContainer> {
 
     private static final String ZOOKEEPER_DEFAULT_BASE_URL = "confluentinc/cp-zookeeper";
+
+    private static final Command<ZookeeperContainer> readyCmd = new ZookeeperReadyCmd();
 
     /**
      * zookeeper mapping port
@@ -63,6 +69,17 @@ public class ZookeeperContainer extends FixedHostPortGenericContainer<ZookeeperC
     public ZookeeperContainer(String version, int zookeeperPort) {
         super(ZOOKEEPER_DEFAULT_BASE_URL + ":" + version);
         this.mappingPort = zookeeperPort;
+        this.waitingFor(new AbstractCommandWaitStrategy(this) {
+            /**
+             * Returns the schell command that must be executed.
+             *
+             * @return
+             */
+            @Override
+            public List<Command> getCheckCommands() {
+                return Arrays.asList(readyCmd);
+            }
+        });
     }
 
     /**
@@ -74,8 +91,7 @@ public class ZookeeperContainer extends FixedHostPortGenericContainer<ZookeeperC
                 .withEnv("ZOOKEEPER_CLIENT_PORT", String.valueOf(this.mappingPort))
                 .withExposedPorts(this.mappingPort)
                 .withFixedExposedPort(this.mappingPort, this.mappingPort)
-                .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withName("testcontainsers-zookeeper-" + UUID.randomUUID()))
-                .waitingFor(new ZookeeperStatusCheck());
+                .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withName("testcontainsers-zookeeper-" + UUID.randomUUID()));
     }
 
     /**
@@ -128,26 +144,5 @@ public class ZookeeperContainer extends FixedHostPortGenericContainer<ZookeeperC
         return Objects.hash(super.hashCode(), getMappingPort());
     }
 
-    /**
-     * Define the waiting strategy for the zookeeper container.
-     */
-    private final class ZookeeperStatusCheck extends AbstractCommandWaitStrategy {
 
-        private static final String TIMEOUT_IN_SEC = "30";
-
-        public ZookeeperStatusCheck() {
-            super(ZookeeperContainer.this);
-        }
-
-        @Override
-        public String[] getCheckCommand() {
-            return new String[]{
-                    "cub",
-                    "zk-ready",
-                    getURL(),
-                    TIMEOUT_IN_SEC
-            };
-        }
-
-    }
 }

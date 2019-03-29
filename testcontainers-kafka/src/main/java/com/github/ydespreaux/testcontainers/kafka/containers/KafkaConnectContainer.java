@@ -21,6 +21,7 @@
 package com.github.ydespreaux.testcontainers.kafka.containers;
 
 import com.github.ydespreaux.testcontainers.common.IContainer;
+import com.github.ydespreaux.testcontainers.kafka.security.Certificates;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
@@ -48,6 +49,13 @@ import static java.lang.String.format;
 @Slf4j
 public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaConnectContainer> implements IContainer<KafkaConnectContainer> {
 
+    private static final String KAFKA_CONNECT_DEFAULT_BASE_URL = "confluentinc/cp-kafka-connect";
+    private static final String SECRETS_DIRECTORY = "/etc/kafka-connect/secrets";
+
+    private static final String REST_APP_SYSTEM_PROPERTY = "spring.kafka-connect.rest-app";
+
+    private static final String AVRO_CONVERTER_PATTERN = "AvroConverter";
+
     /**
      * Key / value for Configuration
      */
@@ -62,7 +70,6 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
     public static final String KEY_CONVERTER_SCHEMA_REGISTRY_URL_CONFIG = "CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL";
     public static final String VALUE_CONVERTER_CONFIG = "CONNECT_VALUE_CONVERTER";
     public static final String VALUE_CONVERTER_SCHEMA_REGISTRY_URL_CONFIG = "CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL";
-    private static final String KAFKA_CONNECT_DEFAULT_BASE_URL = "confluentinc/cp-kafka-connect";
     private static final String PLUGIN_PATH_CONTAINER = "/usr/share/java";
     private static final String GROUP_ID_DEFAULT_VALUE = "kafka-connect-group";
     private static final String OFFSET_STORAGE_FILE_FILENAME_DEFAULT_VALUE = "connect-offsets-file.txt";
@@ -92,34 +99,37 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
     /**
      * Brokers server url
      */
-    private final String brokersServerUrl;
+    private String brokersServerUrl;
     /**
      * Schema registry url
      */
-    private final String schemaRegistryUrl;
+    private String schemaRegistryUrl;
 
-    /**
-     * Register springboot properties in environment
-     */
-    private boolean registerSpringbootProperties = true;
     /**
      *
      */
-    private String restAppSystemProperty;
+    private String restAppSystemProperty = REST_APP_SYSTEM_PROPERTY;
 
-    public KafkaConnectContainer(String version, String brokersServerUrl) {
-        this(version, getAvailableMappingPort(), brokersServerUrl, null);
+    private Certificates kafkaServerCertificates;
+
+    private boolean registerSpringbootProperties = true;
+    private boolean hasKeyAvroConverter = false;
+    private boolean hasValueAvroConverter = false;
+
+    /**
+     * @param version
+     */
+    public KafkaConnectContainer(String version) {
+        this(version, getAvailableMappingPort());
     }
 
-    public KafkaConnectContainer(String version, String brokersServerUrl, String schemaRegistryUrl) {
-        this(version, getAvailableMappingPort(), brokersServerUrl, schemaRegistryUrl);
-    }
-
-    public KafkaConnectContainer(String version, int restAppMappingPort, String brokersServerUrl, String schemaRegistryUrl) {
+    /**
+     * @param version
+     * @param restAppMappingPort
+     */
+    public KafkaConnectContainer(String version, int restAppMappingPort) {
         super(KAFKA_CONNECT_DEFAULT_BASE_URL + ":" + version);
         this.restAppMappingPort = restAppMappingPort;
-        this.brokersServerUrl = brokersServerUrl;
-        this.schemaRegistryUrl = schemaRegistryUrl;
         this.initConfiguration();
     }
 
@@ -141,6 +151,17 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         this.withEnv(STATUS_STORAGE_REPLICATION_FACTOR_CONFIG, String.valueOf(STATUS_STORAGE_REPLICATION_FACTOR_DEFAULT_VALUE));
         this.withEnv(INTERNAL_KEY_CONVERTER_CONFIG, INTERNAL_KEY_CONVERTER_DEFAULT_VALUE);
         this.withEnv(INTERNAL_VALUE_CONVERTER_CONFIG, INTERNAL_VALUE_CONVERTER_DEFAULT_VALUE);
+        waitingFor(Wait.forHttp("/").withStartupTimeout(Duration.ofSeconds(120L)));
+    }
+
+    public KafkaConnectContainer withBrokersServerUrl(String brokersServerUrl) {
+        this.brokersServerUrl = brokersServerUrl;
+        return this;
+    }
+
+    public KafkaConnectContainer withSchemaRegistryUrl(String schemaRegistryUrl) {
+        this.schemaRegistryUrl = schemaRegistryUrl;
+        return this;
     }
 
     /**
@@ -157,8 +178,43 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
                 .withEnv("CONNECT_REST_PORT", String.valueOf(this.restAppMappingPort))
                 .withExposedPorts(this.restAppMappingPort)
                 .withFixedExposedPort(this.restAppMappingPort, this.restAppMappingPort)
-                .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withName("testcontainsers-kafka-connect-" + UUID.randomUUID()))
-                .waitingFor(Wait.forHttp("/").withStartupTimeout(Duration.ofSeconds(120L)));
+                .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withName("testcontainsers-kafka-connect-" + UUID.randomUUID()));
+
+        if (hasKeyAvroConverter) {
+            Objects.requireNonNull(this.schemaRegistryUrl, "Schema registry URL not defined !!");
+            this.withEnv(KEY_CONVERTER_SCHEMA_REGISTRY_URL_CONFIG, this.schemaRegistryUrl);
+            this.withEnv(KEY_CONVERTER_SCHEMAS_ENABLE_CONFIG, "true");
+        }
+        if (hasValueAvroConverter) {
+            Objects.requireNonNull(this.schemaRegistryUrl, "Schema registry URL not defined !!");
+            this.withEnv(VALUE_CONVERTER_SCHEMA_REGISTRY_URL_CONFIG, this.schemaRegistryUrl);
+            this.withEnv(VALUE_CONVERTER_SCHEMAS_ENABLE_CONFIG, "true");
+        }
+    }
+
+    /**
+     * @param certificates
+     * @return
+     */
+    public KafkaConnectContainer withServerCertificates(Certificates certificates) {
+        if (certificates == null) {
+            return this;
+        }
+        this.kafkaServerCertificates = certificates;
+        this.addFileSystemBind(certificates.getKeystorePath().toString(), SECRETS_DIRECTORY + '/' + certificates.getKeystorePath().getFileName(), BindMode.READ_ONLY);
+        if (certificates.getTruststorePath() != null) {
+            this.addFileSystemBind(certificates.getTruststorePath().toString(), SECRETS_DIRECTORY + '/' + certificates.getTruststorePath().getFileName(), BindMode.READ_ONLY);
+        }
+        withEnv("CONNECT_SECURITY_PROTOCOL", "SSL");
+        withEnv("CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM", "");
+        withEnv("CONNECT_SSL_KEYSTORE_LOCATION", SECRETS_DIRECTORY + '/' + certificates.getKeystorePath().getFileName());
+        withEnv("CONNECT_SSL_KEYSTORE_PASSWORD", certificates.getKeystorePassword());
+        withEnv("CONNECT_SSL_KEY_PASSWORD", certificates.getKeystorePassword());
+        if (certificates.getTruststorePath() != null) {
+            withEnv("CONNECT_SSL_TRUSTSTORE_LOCATION", SECRETS_DIRECTORY + '/' + certificates.getTruststorePath().getFileName());
+            withEnv("CONNECT_SSL_TRUSTSTORE_PASSWORD", certificates.getTruststorePassword());
+        }
+        return this;
     }
 
     /**
@@ -182,7 +238,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         if (groupId != null) {
             withEnv(GROUP_ID_CONFIG, groupId);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -195,20 +251,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         if (topic != null) {
             withEnv(CONFIG_STORAGE_TOPIC_CONFIG, topic);
         }
-        return this.self();
-    }
-
-    /**
-     * Set the replication.
-     *
-     * @param replication
-     * @return
-     */
-    public KafkaConnectContainer withConfigStorageReplicationFactor(Integer replication) {
-        if (replication != null) {
-            withEnv(CONFIG_STORAGE_REPLICATION_FACTOR_CONFIG, String.valueOf(replication));
-        }
-        return this.self();
+        return this;
     }
 
     /**
@@ -221,7 +264,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         if (topic != null) {
             withEnv(OFFSET_STORAGE_TOPIC_CONFIG, topic);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -234,25 +277,11 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         if (partitions != null) {
             withEnv(OFFSET_STORAGE_PARTITIONS_CONFIG, String.valueOf(partitions));
         }
-        return this.self();
-    }
-
-    /**
-     * Set the offsets storage replication.
-     *
-     * @param replication
-     * @return
-     */
-    public KafkaConnectContainer withOffsetStorageReplicationFactor(Integer replication) {
-        if (replication != null) {
-            withEnv(OFFSET_STORAGE_REPLICATION_FACTOR_CONFIG, String.valueOf(replication));
-        }
-        return this.self();
+        return this;
     }
 
     /**
      * Set the status storage topic's name.
-     *
      * @param topic
      * @return
      */
@@ -260,7 +289,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         if (topic != null) {
             withEnv(STATUS_STORAGE_TOPIC_CONFIG, topic);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -273,20 +302,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         if (partitions != null) {
             withEnv(STATUS_STORAGE_PARTITIONS_CONFIG, String.valueOf(partitions));
         }
-        return this.self();
-    }
-
-    /**
-     * Set the status storage replication.
-     *
-     * @param replication
-     * @return
-     */
-    public KafkaConnectContainer withStatusStorageReplicationFactor(Integer replication) {
-        if (replication != null) {
-            withEnv(STATUS_STORAGE_REPLICATION_FACTOR_CONFIG, String.valueOf(replication));
-        }
-        return this.self();
+        return this;
     }
 
     /**
@@ -299,7 +315,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         if (storageFilename != null) {
             withEnv(OFFSET_STORAGE_FILE_FILENAME_CONFIG, storageFilename);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -311,15 +327,9 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
     public KafkaConnectContainer withKeyConverter(String keyConverter) {
         if (keyConverter != null) {
             withEnv(KEY_CONVERTER_CONFIG, keyConverter);
-            if (keyConverter.contains("AvroConverter")) {
-                Objects.requireNonNull(this.schemaRegistryUrl, "Schema registry URL not defined !!");
-                this.withEnv(KEY_CONVERTER_SCHEMA_REGISTRY_URL_CONFIG, this.schemaRegistryUrl);
-                this.withEnv(KEY_CONVERTER_SCHEMAS_ENABLE_CONFIG, "true");
-            } else {
-                this.withEnv(KEY_CONVERTER_SCHEMAS_ENABLE_CONFIG, "false");
-            }
+            this.hasKeyAvroConverter = keyConverter.contains(AVRO_CONVERTER_PATTERN);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -331,16 +341,9 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
     public KafkaConnectContainer withValueConverter(String valueConverter) {
         if (valueConverter != null) {
             withEnv(VALUE_CONVERTER_CONFIG, valueConverter);
-            if (valueConverter.contains("AvroConverter")) {
-                Objects.requireNonNull(this.schemaRegistryUrl, "Schema registry URL not defined !!");
-                this.withEnv(VALUE_CONVERTER_SCHEMA_REGISTRY_URL_CONFIG, this.schemaRegistryUrl);
-                this.withEnv(VALUE_CONVERTER_SCHEMAS_ENABLE_CONFIG, "true");
-            } else {
-                this.withEnv(VALUE_CONVERTER_SCHEMAS_ENABLE_CONFIG, "false");
-            }
-
+            this.hasValueAvroConverter = valueConverter.contains(AVRO_CONVERTER_PATTERN);
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -351,10 +354,10 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      */
     public KafkaConnectContainer withPlugins(Set<String> plugins) {
         if (plugins == null) {
-            return this.self();
+            return this;
         }
         plugins.forEach(this::withPlugins);
-        return this.self();
+        return this;
     }
 
     /**
@@ -365,7 +368,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      */
     public KafkaConnectContainer withPlugins(String plugins) {
         if (plugins == null) {
-            return this.self();
+            return this;
         }
         MountableFile mountableFile = MountableFile.forClasspathResource(plugins);
         Path pluginsPath = Paths.get(mountableFile.getResolvedPath());
@@ -381,7 +384,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         }
         // Create the volume that will be need for scripts
         this.addFileSystemBind(mountableFile.getResolvedPath(), containerPath, BindMode.READ_ONLY);
-        return this.self();
+        return this;
     }
 
     /**
@@ -392,7 +395,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         if (restAppSystemProperty != null) {
             this.restAppSystemProperty = restAppSystemProperty;
         }
-        return this.self();
+        return this;
     }
 
     /**
@@ -404,12 +407,11 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
     @Override
     public KafkaConnectContainer withRegisterSpringbootProperties(boolean registerProperties) {
         this.registerSpringbootProperties = registerProperties;
-        return this.self();
+        return this;
     }
 
     /**
      * Check if system properties must be registred.
-     *
      * @return
      */
     @Override
@@ -428,7 +430,6 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
 
     /**
      * Get the local url
-     *
      * @return
      */
     @Override
@@ -451,15 +452,11 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
         if (!(o instanceof KafkaConnectContainer)) return false;
         if (!super.equals(o)) return false;
         KafkaConnectContainer that = (KafkaConnectContainer) o;
-        return restAppMappingPort == that.restAppMappingPort &&
-                registerSpringbootProperties == that.registerSpringbootProperties &&
-                Objects.equals(brokersServerUrl, that.brokersServerUrl) &&
-                Objects.equals(schemaRegistryUrl, that.schemaRegistryUrl) &&
-                Objects.equals(restAppSystemProperty, that.restAppSystemProperty);
+        return restAppMappingPort == that.restAppMappingPort;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), restAppMappingPort, brokersServerUrl, schemaRegistryUrl, registerSpringbootProperties, restAppSystemProperty);
+        return Objects.hash(super.hashCode(), restAppMappingPort);
     }
 }

@@ -24,13 +24,14 @@ import org.junit.rules.TestRule;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.testcontainers.containers.Network;
+import org.testcontainers.lifecycle.Startable;
 
 /**
  * @param <S>
  * @author Yoann Despréaux
  * @since 1.0.0
  */
-public interface ConfluentContainer<S extends ConfluentContainer<S>> extends TestRule, InitializingBean, DisposableBean {
+public interface ConfluentContainer<S extends ConfluentContainer<S>> extends TestRule, InitializingBean, DisposableBean, Startable {
 
     default S self() {
         return (S) this;

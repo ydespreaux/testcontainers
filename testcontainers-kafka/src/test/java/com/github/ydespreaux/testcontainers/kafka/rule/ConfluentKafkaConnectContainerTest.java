@@ -18,56 +18,43 @@
  * Please send bugreports with examples or suggestions to yoann.despreaux@believeit.fr
  */
 
-package com.github.ydespreaux.testcontainers.kafka.containers;
+package com.github.ydespreaux.testcontainers.kafka.rule;
+
 
 import com.github.ydespreaux.testcontainers.kafka.domain.WorkerInfo;
-import com.github.ydespreaux.testcontainers.kafka.rule.ConfluentKafkaContainer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-@RunWith(SpringRunner.class)
-public class ITKafkaConnectContainerTest {
+@Slf4j
+@Tag("integration")
+@Testcontainers
+public class ConfluentKafkaConnectContainerTest {
 
-    @ClassRule
-    public static ConfluentKafkaContainer kafkaContainer = new ConfluentKafkaContainer()
-            .withRegisterSpringbootProperties(false);
+    @Container
+    public static final ConfluentKafkaConnectContainer container = new ConfluentKafkaConnectContainer("5.1.0")
+            .withSchemaRegistry(true)
+            .withKeyConverter("org.apache.kafka.connect.storage.StringConverter")
+            .withValueConverter("io.confluent.connect.avro.AvroConverter");
 
-    private static KafkaConnectContainer kafkaConnectContainer;
-
-
-    @BeforeClass
-    public static void onSetupClass() {
-        kafkaConnectContainer = new KafkaConnectContainer("4.1.0",
-                kafkaContainer.getKafkaContainer().getInternalURL())
-                .withNetwork(kafkaContainer.getNetwork());
-        kafkaConnectContainer.start();
-    }
-
-    @AfterClass
-    public static void onTeardownClass() {
-        if (kafkaConnectContainer != null) {
-            kafkaConnectContainer.stop();
-        }
+    @Test
+    void containerEnvironment() {
+        assertThat(container.getBootstrapServers(), is(notNullValue()));
+        assertThat(container.getZookeeperServer(), is(notNullValue()));
+        assertThat(container.getRestAppServers(), is(notNullValue()));
     }
 
     @Test
-    public void containerEnvironment() {
-        assertThat(kafkaConnectContainer.getURL(), is(notNullValue()));
-    }
-
-    @Test
-    public void checkAppRest() {
+    void checkAppRest() {
         RestTemplate template = new RestTemplate();
-        WorkerInfo info = template.getForObject(kafkaConnectContainer.getURL(), WorkerInfo.class);
+        WorkerInfo info = template.getForObject(container.getRestAppServers(), WorkerInfo.class);
         assertThat(info, is(notNullValue()));
         assertThat(info.getVersion(), is(notNullValue()));
         assertThat(info.getCommit(), is(notNullValue()));

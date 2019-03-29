@@ -86,7 +86,7 @@ public class ContainerUtils {
      * @return
      */
     public static Consumer<OutputFrame> containerLogsConsumer(Logger log) {
-        return (OutputFrame outputFrame) -> log.debug(outputFrame.getUtf8String());
+        return (OutputFrame outputFrame) -> log.trace(outputFrame.getUtf8String());
     }
 
     /**

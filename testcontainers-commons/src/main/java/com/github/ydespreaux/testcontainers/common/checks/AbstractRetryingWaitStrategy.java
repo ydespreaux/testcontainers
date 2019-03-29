@@ -23,8 +23,8 @@ package com.github.ydespreaux.testcontainers.common.checks;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.TimeoutException;
 import org.rnorth.ducttape.unreliables.Unreliables;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy;
 
 import java.util.concurrent.TimeUnit;
@@ -38,19 +38,19 @@ import static java.lang.String.format;
  * @since 1.0.0
  */
 @Slf4j
-public abstract class AbstractRetryingWaitStrategy extends AbstractWaitStrategy {
+public abstract class AbstractRetryingWaitStrategy<T extends Container> extends AbstractWaitStrategy {
 
     /**
      * The current container.
      */
-    protected final GenericContainer container;
+    protected final T container;
 
     /**
      * Default constructor.
      *
      * @param container
      */
-    public AbstractRetryingWaitStrategy(GenericContainer container) {
+    public AbstractRetryingWaitStrategy(T container) {
         this.container = container;
     }
 

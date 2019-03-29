@@ -20,9 +20,12 @@
 
 package com.github.ydespreaux.testcontainers.common.checks;
 
-import com.github.ydespreaux.testcontainers.common.utils.ContainerUtils;
+import com.github.ydespreaux.testcontainers.common.cmd.Command;
+import com.github.ydespreaux.testcontainers.common.cmd.CommandExecutionException;
 import lombok.extern.slf4j.Slf4j;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Container;
+
+import java.util.List;
 
 /**
  * Define a waiting strategy.
@@ -33,9 +36,9 @@ import org.testcontainers.containers.GenericContainer;
  * @since 1.0.0
  */
 @Slf4j
-public abstract class AbstractCommandWaitStrategy extends AbstractRetryingWaitStrategy {
+public abstract class AbstractCommandWaitStrategy<T extends Container> extends AbstractRetryingWaitStrategy<T> {
 
-    public AbstractCommandWaitStrategy(GenericContainer container) {
+    public AbstractCommandWaitStrategy(T container) {
         super(container);
     }
 
@@ -44,26 +47,34 @@ public abstract class AbstractCommandWaitStrategy extends AbstractRetryingWaitSt
      *
      * @return
      */
-    public abstract String[] getCheckCommand();
+    public abstract List<Command> getCheckCommands();
+
 
     @Override
     protected boolean isReady() {
+        for (Command command : getCheckCommands()) {
+            if (!isReady(command)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param command
+     * @return
+     */
+    private boolean isReady(Command command) {
         String commandName = getContainerType();
         String containerId = container.getContainerId();
         if (log.isDebugEnabled()) {
             log.debug("{} execution of command {} for container id: {} ", commandName, containerId);
         }
-
-        ContainerUtils.ExecCmdResult healthCheckCmdResult = ContainerUtils.execCmd(container.getDockerClient(), containerId, getCheckCommand());
-
-        if (log.isDebugEnabled()) {
-            log.debug("{} executed with exitCode: {}, output: {}",
-                    commandName, healthCheckCmdResult.getExitCode(), healthCheckCmdResult.getOutput());
-        }
-
-        if (healthCheckCmdResult.getExitCode() != 0) {
+        try {
+            command.execute(container);
+        } catch (CommandExecutionException e) {
             if (log.isDebugEnabled()) {
-                log.debug("{} executed with exitCode !=0, considering status as unknown", commandName);
+                log.debug(e.getMessage());
             }
             return false;
         }

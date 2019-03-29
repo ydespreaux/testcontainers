@@ -17,7 +17,7 @@
     <logger name="io.confluent.testcontainers" level="INFO"/>
 
     <!--<logger name="com.yammer.metrics.reporting" level="OFF"/>-->
-    <logger name="com.github.ydespreaux.spring.testcontainers.kafka" level="INFO"/>
+    <logger name="com.github.ydespreaux.testcontainers" level="INFO"/>
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

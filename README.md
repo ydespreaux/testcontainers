@@ -18,10 +18,12 @@ Container types:
 Versions
 -----------
 
-|   spring-testcontainers    |   testcontainers |
-|:--------------------------:|:----------------:|
-|   1.1.0                    |       1.10.6     |
-|   1.0.0                    |       1.8.3      |
+|   spring-testcontainers    |   testcontainers | JUnit version compatibility |
+|:--------------------------:|:----------------:|--------------:|
+|   1.2.1                    |       1.10.6     | Junit 4, Junit 5 |
+|   1.2.0                    |       1.10.6     | Junit 4 |
+|   1.1.0                    |       1.10.6     | Junit 4 |
+|   1.0.0                    |       1.8.3      | Junit 4 |
 
 ## Prerequisites
 
@@ -41,6 +43,17 @@ Using this library requires a Docker configuration beforehand so that the docker
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-mysql</artifactId>
     <version>1.0.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### Using Junit 5 (version 1.2.1)
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>1.11.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -152,6 +165,16 @@ public class ITMySQLTest {
 }
 ```
 
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITMySQLTest {
+
+    @Container
+    public static final MySQLContainer mySqlContainer = new MySQLContainer();
+}
+```
 
 ## Cassandra
 
@@ -162,6 +185,17 @@ public class ITMySQLTest {
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-cassandra</artifactId>
     <version>1.0.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### Using Junit 5 (version 1.2.1)
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>1.11.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -222,6 +256,17 @@ public class ITMySQLTest {
 
 The withCqlScriptDirectory (...) method takes a parameter from the directory path. The set of scripts cql will be executed after the start of the container.
 
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITCassandraTest {
+
+    @Container
+    public static final CassandraContainer mySqlContainer = new CassandraContainer();
+}
+```
+
 ## Elasticsearch
 
 ### Add the Maven dependency
@@ -231,6 +276,17 @@ The withCqlScriptDirectory (...) method takes a parameter from the directory pat
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-elasticsearch</artifactId>
     <version>1.1.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### Using Junit 5 (version 1.2.1)
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>1.11.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -254,7 +310,7 @@ The URL of the image and the version is configurable. Below is an example to use
 public class ITElasticsearchTest {
 
     @ClassRule
-    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer("6.4.2");
+    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer(Versions.ELASTICSEARCH_VERSION);
 }
 ```
 
@@ -340,6 +396,17 @@ To send a DELETE request to http://localhost:9200/test_index/test_type/1 without
 DELETE:test_index/test_type/1:
 ```
 
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITElasticsearchTest {
+
+    @Container
+    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer();
+}
+```
+
 ## Kafka
 
 ### Add the Maven dependency
@@ -349,6 +416,17 @@ DELETE:test_index/test_type/1:
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-kafka</artifactId>
     <version>1.0.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### Using Junit 5 (version 1.2.1)
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>1.11.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -438,7 +516,60 @@ public class ITKafkaTest {
         .withTopic("topic2-compact", 3, true);
 }
 ```
+#### Sécurité SSL (version 1.2.0).
 
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+public class ITKafkaTest {
+
+    public static final Certificates kafkaServerCertificates = new Certificates("secrets/kafka.server.keystore.jks", "0123456789", "secrets/kafka.truststore.jks", "0123456789");
+    public static final Certificates kafkaClientCertificates = new Certificates("secrets/kafka.client.keystore.jks", "0123456789", "secrets/kafka.truststore.jks", "0123456789");
+
+    @ClassRule
+    public static final ConfluentKafkaContainer mySqlContainer = new ConfluentKafkaContainer()
+        .withKafkaServerCertificates(kafkaServerCertificates)
+        .withKafkaClientCertificates(kafkaClientCertificates)
+        .withTopic("TOPIC_1", 1, true)
+        .withAcls(new AclsOperation[]{AclsOperation.READ, AclsOperation.WRITE}, "TOPIC_1", "my-group");
+}    
+```
+
+When the docker container has started, the properties corresponding to the SSL configuration are initialized in the context of spring boot:
+
+|   Spring boot property                       |   Description                                                                                                                       |
+|:---------------------------------------------:|:-----------------------------------------------------------------:|
+|   spring.kafka.security.protocol              | Security protocol : SSL                                       | 
+|   spring.kafka.ssl.key-password               | Keystore password (client)  | 
+|   spring.kafka.ssl.key-store-location         | Keystore location (client)| 
+|   spring.kafka.ssl.key-store-password         | Keystore password| 
+|   spring.kafka.ssl.trust-store-location       | Truststore location| 
+|   spring.kafka.ssl.trust-store-password       | Truststore password| 
+|   spring.kafka.properties.ssl.endpoint.identification.algorithm | Identification algorithm set to empty ("")| 
+
+If the client certificate is not initialized when the container is launched, the spring boot properties related to the SSL configuration will not be initialized.
+
+The name of the spring boot properties can be changed using the following methods:
+
+| Methode                          | Default value                             |
+|:---------------------------------:|:---------------------------------------------:|
+| withSecurityProtocolSystemProperty    | spring.kafka.security.protocol                |
+| withKeyPasswordSystemProperty  |     spring.kafka.ssl.key-password   |
+| withKeystoreLocationSystemProperty  |     spring.kafka.ssl.key-store-location   |
+| withKeystorePasswordSystemProperty  |     spring.kafka.ssl.key-store-password   |
+| withTruststoreLocationSystemProperty  |     spring.kafka.ssl.trust-store-location   |
+| withTruststorePasswordSystemProperty  |     spring.kafka.ssl.trust-store-password   |
+| withIdentificationAlgorithmSystemProperty  | spring.kafka.properties.ssl.endpoint.identification.algorithm   |
+
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITKafkaTest {
+
+    @Container
+    public static final ConfluentKafkaContainer mySqlContainer = new ConfluentKafkaContainer("4.0.0");
+}
+```
 
 ### Container Kafka Connect
 
@@ -521,3 +652,14 @@ Herder initialization method in distributed mode:
 | getZookeeperServer()      | Returns the url of the zookeeper server       | localhost:<port>          |
 | getZookeeperConnect()     | Returns the local url of the zookeeper server | zookeeper:<port>          |
 | getRestAppServers()       | Returns the url of the REST application       | http://localhost:<port>   |
+
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITKafkaTest {
+
+    @Container
+    public static final ConfluentKafkaContainer mySqlContainer = new ConfluentKafkaContainer("4.0.0");
+}
+```
