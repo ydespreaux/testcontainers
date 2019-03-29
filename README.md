@@ -47,6 +47,17 @@ Using this library requires a Docker configuration beforehand so that the docker
 </dependency>
 ```
 
+#### Using Junit 5 (version 1.2.1)
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>1.11.1</version>
+    <scope>test</scope>
+</dependency>
+```
+
 ### Quick Start
 
 ```java
@@ -154,6 +165,16 @@ public class ITMySQLTest {
 }
 ```
 
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITMySQLTest {
+
+    @Container
+    public static final MySQLContainer mySqlContainer = new MySQLContainer();
+}
+```
 
 ## Cassandra
 
@@ -164,6 +185,17 @@ public class ITMySQLTest {
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-cassandra</artifactId>
     <version>1.0.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### Using Junit 5 (version 1.2.1)
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>1.11.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -224,6 +256,17 @@ public class ITMySQLTest {
 
 The withCqlScriptDirectory (...) method takes a parameter from the directory path. The set of scripts cql will be executed after the start of the container.
 
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITCassandraTest {
+
+    @Container
+    public static final CassandraContainer mySqlContainer = new CassandraContainer();
+}
+```
+
 ## Elasticsearch
 
 ### Add the Maven dependency
@@ -233,6 +276,17 @@ The withCqlScriptDirectory (...) method takes a parameter from the directory pat
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-elasticsearch</artifactId>
     <version>1.1.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### Using Junit 5 (version 1.2.1)
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>1.11.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -342,6 +396,17 @@ To send a DELETE request to http://localhost:9200/test_index/test_type/1 without
 DELETE:test_index/test_type/1:
 ```
 
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITElasticsearchTest {
+
+    @Container
+    public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer();
+}
+```
+
 ## Kafka
 
 ### Add the Maven dependency
@@ -351,6 +416,17 @@ DELETE:test_index/test_type/1:
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-kafka</artifactId>
     <version>1.0.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### Using Junit 5 (version 1.2.1)
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>1.11.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -440,7 +516,7 @@ public class ITKafkaTest {
         .withTopic("topic2-compact", 3, true);
 }
 ```
-###### Sécurité SSL (version 1.2.0).
+#### Sécurité SSL (version 1.2.0).
 
 ```java
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -484,6 +560,16 @@ The name of the spring boot properties can be changed using the following method
 | withTruststorePasswordSystemProperty  |     spring.kafka.ssl.trust-store-password   |
 | withIdentificationAlgorithmSystemProperty  | spring.kafka.properties.ssl.endpoint.identification.algorithm   |
 
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITKafkaTest {
+
+    @Container
+    public static final ConfluentKafkaContainer mySqlContainer = new ConfluentKafkaContainer("4.0.0");
+}
+```
 
 ### Container Kafka Connect
 
@@ -566,3 +652,14 @@ Herder initialization method in distributed mode:
 | getZookeeperServer()      | Returns the url of the zookeeper server       | localhost:<port>          |
 | getZookeeperConnect()     | Returns the local url of the zookeeper server | zookeeper:<port>          |
 | getRestAppServers()       | Returns the url of the REST application       | http://localhost:<port>   |
+
+#### Sample with Junit 5 (version 1.2.1)
+
+```java
+@Testcontainers
+public class ITKafkaTest {
+
+    @Container
+    public static final ConfluentKafkaContainer mySqlContainer = new ConfluentKafkaContainer("4.0.0");
+}
+```
