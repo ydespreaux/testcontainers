@@ -5,6 +5,8 @@
     
 ### Changed
 
+- Dependency updates testcontainers from 1.11.1 to 1.11.2
+
 ### Fixed
 
 ## [1.2.2]

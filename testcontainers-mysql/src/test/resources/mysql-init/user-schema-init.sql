@@ -9,5 +9,3 @@ CREATE TABLE IF NOT EXISTS tb_user (
   last_name     VARCHAR(255) NOT NULL,
   last_modified DATETIME     NULL
 );
-
-INSERT INTO tb_user (id, idRh, first_name, last_name, last_modified) VALUES (1,'XPAX624','Jean','Dupond',NOW());

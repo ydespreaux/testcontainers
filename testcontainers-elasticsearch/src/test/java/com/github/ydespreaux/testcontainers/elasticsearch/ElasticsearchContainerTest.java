@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.is;
 
 @Tag("integration")
 @Testcontainers
-public class ElasticsearchContainer_642_Test {
+public class ElasticsearchContainerTest {
 
     @Container
     public static final ElasticsearchContainer elasticContainer = new ElasticsearchContainer("6.4.2")
