@@ -4,7 +4,7 @@
 
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-build</artifactId>
-    <version>1.2.4-SNAPSHOT</version>
+    <version>1.2.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>testcontainers-build</name>
     <description>Defined kafka, elasticsearh, mysql, cassandra containers</description>
