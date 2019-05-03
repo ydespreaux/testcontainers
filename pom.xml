@@ -4,7 +4,7 @@
 
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-build</artifactId>
-    <version>1.2.3-SNAPSHOT</version>
+    <version>1.2.3</version>
     <packaging>pom</packaging>
     <name>testcontainers-build</name>
     <description>Defined kafka, elasticsearh, mysql, cassandra containers</description>
@@ -18,7 +18,7 @@
         <connection>scm:git:git://github.com/ydespreaux/testcontainers.git</connection>
         <developerConnection>scm:git:git@github.com:ydespreaux/testcontainers.git</developerConnection>
         <url>https://github.com/ydespreaux/testcontainers</url>
-        <tag>HEAD</tag>
+        <tag>1.2.3</tag>
     </scm>
     <developers>
         <developer>
