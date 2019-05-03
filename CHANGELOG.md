@@ -5,6 +5,8 @@
     
 ### Changed
 
+- Migration java 11
+
 ### Fixed
 
 ## [1.2.3]

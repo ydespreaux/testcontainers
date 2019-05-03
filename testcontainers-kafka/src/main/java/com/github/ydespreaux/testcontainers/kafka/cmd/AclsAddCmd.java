@@ -120,7 +120,7 @@ public class AclsAddCmd extends AbstractCommand<KafkaContainer> {
                     "kafka-cluster"
             ));
         }
-        return parameters;
+        return List.copyOf(parameters);
     }
 
 }

@@ -23,10 +23,12 @@ package com.github.ydespreaux.testcontainers.elasticsearch.client;
 import com.github.ydespreaux.testcontainers.elasticsearch.ElasticsearchContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.ContainerLaunchException;
-import org.testcontainers.shaded.okhttp3.*;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import static java.lang.String.format;
 
@@ -50,15 +52,6 @@ public class ElasticsearchClient {
         this.baseUrl = container.getURL();
     }
 
-    private static OkHttpClient createHttpClient() {
-        return createHttpClient(10, TimeUnit.SECONDS);
-    }
-
-    private static OkHttpClient createHttpClient(long timeout, TimeUnit timeUnit) {
-        return new OkHttpClient.Builder().connectTimeout(timeout, timeUnit)
-                .writeTimeout(timeout, timeUnit).readTimeout(timeout, timeUnit).build();
-    }
-
     /**
      * @param command
      */
@@ -66,7 +59,7 @@ public class ElasticsearchClient {
         if (command.isSkip()) {
             return;
         }
-        Response response = null;
+        HttpResponse<String> response = null;
         try {
             switch (command.getRequestMethod()) {
                 case PUT:
@@ -81,49 +74,46 @@ public class ElasticsearchClient {
                 default:
                     throw new ContainerLaunchException(format("Request method %s not supported", command.getRequestMethod()));
             }
-            if (response != null) {
-                if (!isValidHttpCode(response.code())) {
-                    throw new ContainerLaunchException(format("Execute command %s success : %s", command.toString(), response.body().string()));
-                }
-                if (log.isInfoEnabled()) {
-                    log.info("Execute command {} success : {}", command.toString(), response.body().string());
-                }
+            if (!isValidHttpCode(response.statusCode())) {
+                throw new ContainerLaunchException(format("Execute command %s success : %s", command.toString(), response.body()));
             }
-        } catch (IOException e) {
+            if (log.isInfoEnabled()) {
+                log.info("Execute command {} success : {}", command.toString(), response.body());
+            }
+        } catch (Exception e) {
             throw new ContainerLaunchException(format("command '%s' failed : ", command), e);
         }
     }
 
-    private Response delete(String path) throws IOException {
-        OkHttpClient client = createHttpClient();
-        Request request = new Request.Builder()
-                .url(this.baseUrl + path)
-                .delete()
+    private HttpResponse<String> delete(String path) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newBuilder().build();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(this.baseUrl + path))
+                .DELETE()
                 .build();
-        return client.newCall(request).execute();
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    private Response post(String path, String entity) throws IOException {
-        OkHttpClient client = createHttpClient();
-        Request request = new Request.Builder()
-                .addHeader("Content-Type", APPLICATION_JSON)
-                .url(this.baseUrl + path)
-                .post(RequestBody.create(MediaType.parse(APPLICATION_JSON), entity))
+    private HttpResponse<String> post(String path, String entity) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newBuilder().build();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(this.baseUrl + path))
+                .header("Content-Type", APPLICATION_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(entity))
                 .build();
-        return client.newCall(request).execute();
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    private Response put(String path, String entity) throws IOException {
-        OkHttpClient client = createHttpClient();
-        Request request = new Request.Builder()
-                .addHeader("Content-Type", APPLICATION_JSON)
-                .url(this.baseUrl + path)
-                .put(RequestBody.create(org.testcontainers.shaded.okhttp3.MediaType.parse(APPLICATION_JSON), entity))
+    private HttpResponse<String> put(String path, String entity) throws IOException, InterruptedException {
+
+        HttpClient client = HttpClient.newBuilder().build();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(this.baseUrl + path))
+                .header("Content-Type", APPLICATION_JSON)
+                .PUT(HttpRequest.BodyPublishers.ofString(entity))
                 .build();
-        return client.newCall(request).execute();
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     private boolean isValidHttpCode(int httpCode) {
         return httpCode == 200 || httpCode == 201;
     }
+
 }

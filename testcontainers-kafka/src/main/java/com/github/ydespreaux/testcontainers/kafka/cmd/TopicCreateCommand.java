@@ -67,6 +67,6 @@ public class TopicCreateCommand extends AbstractCommand<KafkaContainer> {
                     "--config", "cleanup.policy=compact"
             ));
         }
-        return parameters;
+        return List.copyOf(parameters);
     }
 }

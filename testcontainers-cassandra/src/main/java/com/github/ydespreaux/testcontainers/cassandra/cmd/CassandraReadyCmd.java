@@ -23,16 +23,13 @@ package com.github.ydespreaux.testcontainers.cassandra.cmd;
 import com.github.ydespreaux.testcontainers.cassandra.CassandraContainer;
 import com.github.ydespreaux.testcontainers.common.cmd.AbstractCommand;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class CassandraReadyCmd extends AbstractCommand<CassandraContainer> {
 
     @Override
     protected List<String> buildParameters(CassandraContainer container) {
-        return Arrays.asList(
-                "cqlsh", "-e", "SELECT release_version FROM system.local"
-        );
+        return List.of("cqlsh", "-e", "SELECT release_version FROM system.local");
     }
 }
 

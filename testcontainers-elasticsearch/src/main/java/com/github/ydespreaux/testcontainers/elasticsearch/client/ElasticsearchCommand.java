@@ -23,6 +23,8 @@ package com.github.ydespreaux.testcontainers.elasticsearch.client;
 import lombok.*;
 import org.springframework.util.Assert;
 
+import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.DELIMITER_PATH;
+
 /**
  * @author Yoann Despréaux
  * @since 1.0.1
@@ -55,8 +57,8 @@ public class ElasticsearchCommand {
     public void setPath(String path) {
         Assert.notNull(path, "path parameter must be provided");
         String formattedPath = path;
-        if (!formattedPath.startsWith("/")) {
-            formattedPath = "/" + formattedPath;
+        if (!formattedPath.startsWith(DELIMITER_PATH)) {
+            formattedPath = DELIMITER_PATH.concat(formattedPath);
         }
         this.path = formattedPath;
     }

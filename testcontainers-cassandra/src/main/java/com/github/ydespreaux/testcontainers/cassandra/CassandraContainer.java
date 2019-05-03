@@ -27,6 +27,7 @@ import com.github.ydespreaux.testcontainers.common.checks.AbstractCommandWaitStr
 import com.github.ydespreaux.testcontainers.common.cmd.Command;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.shaded.org.apache.commons.io.FilenameUtils;
@@ -123,7 +124,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
              */
             @Override
             public List<Command> getCheckCommands() {
-                return Arrays.asList(readyCmd);
+                return List.of(readyCmd);
             }
         }).withStartupTimeout(Duration.ofSeconds(this.getStartupTimeoutSeconds()));
     }
@@ -135,7 +136,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
      */
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return new HashSet(this.getMappedPort(CASSANDRA_DEFAULT_PORT));
+        return Set.of(this.getMappedPort(CASSANDRA_DEFAULT_PORT));
     }
 
     /**
@@ -193,7 +194,7 @@ public class CassandraContainer extends GenericContainer<CassandraContainer> imp
      * @param directory
      * @return
      */
-    public CassandraContainer withCqlScriptDirectory(String directory) {
+    public CassandraContainer withCqlScriptDirectory(@Nullable String directory) {
         if (directory == null) {
             return this.self();
         }

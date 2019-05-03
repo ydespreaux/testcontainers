@@ -26,7 +26,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -51,7 +50,7 @@ public class ZookeeperReadyCmd extends AbstractCommand<ZookeeperContainer> {
 
     @Override
     protected List<String> buildParameters(ZookeeperContainer container) {
-        return Arrays.asList(
+        return List.of(
                 "cub",
                 "zk-ready",
                 container.getURL(),

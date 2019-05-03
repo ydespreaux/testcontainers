@@ -23,7 +23,6 @@ package com.github.ydespreaux.testcontainers.kafka.cmd;
 import com.github.ydespreaux.testcontainers.common.cmd.AbstractCommand;
 import com.github.ydespreaux.testcontainers.kafka.containers.KafkaContainer;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -49,7 +48,7 @@ public class AclsListCmd extends AbstractCommand<KafkaContainer> {
     @Override
     protected List<String> buildParameters(KafkaContainer container) {
         String zookeeperUrl = container.getEnvMap().get("KAFKA_ZOOKEEPER_CONNECT");
-        return Arrays.asList(
+        return List.of(
                 "kafka-acls",
                 "--authorizer-properties",
                 "zookeeper.connect=" + zookeeperUrl,

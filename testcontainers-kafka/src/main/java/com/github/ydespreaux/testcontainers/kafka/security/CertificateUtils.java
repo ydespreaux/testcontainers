@@ -20,6 +20,10 @@
 
 package com.github.ydespreaux.testcontainers.kafka.security;
 
+import org.springframework.lang.Nullable;
+import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.GenericContainer;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +38,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
+import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.DELIMITER_PATH;
 import static java.security.KeyStore.getInstance;
 
 public final class CertificateUtils {
@@ -51,7 +56,8 @@ public final class CertificateUtils {
         }
     }
 
-    public static String getSubject(KeyStore keyStore, String issuer) {
+    @Nullable
+    public static String getSubject(KeyStore keyStore, @Nullable String issuer) {
         try {
             Enumeration<String> aliases = keyStore.aliases();
             while (aliases.hasMoreElements()) {
@@ -77,5 +83,29 @@ public final class CertificateUtils {
             writer.flush();
         }
         return path;
+    }
+
+    /**
+     * @param container
+     * @param certificates
+     * @param directory
+     * @param prefix
+     */
+    public static Certificates addCertificates(GenericContainer<?> container, Certificates certificates, String directory, String prefix) {
+        String pathSecretsDirectory = directory.endsWith(DELIMITER_PATH) ? directory : directory + DELIMITER_PATH;
+        container.addFileSystemBind(certificates.getKeystorePath().toString(), pathSecretsDirectory + certificates.getKeystorePath().getFileName(), BindMode.READ_ONLY);
+        if (certificates.getTruststorePath() != null) {
+            container.addFileSystemBind(certificates.getTruststorePath().toString(), pathSecretsDirectory + certificates.getTruststorePath().getFileName(), BindMode.READ_ONLY);
+        }
+        container.withEnv(prefix + "SECURITY_PROTOCOL", "SSL");
+        container.withEnv(prefix + "SSL_ENDPOINT_IDENTIFICATION_ALGORITHM", "");
+        container.withEnv(prefix + "SSL_KEYSTORE_LOCATION", pathSecretsDirectory + certificates.getKeystorePath().getFileName());
+        container.withEnv(prefix + "SSL_KEYSTORE_PASSWORD", certificates.getKeystorePassword());
+        container.withEnv(prefix + "SSL_KEY_PASSWORD", certificates.getKeystorePassword());
+        if (certificates.getTruststorePath() != null) {
+            container.withEnv(prefix + "SSL_TRUSTSTORE_LOCATION", pathSecretsDirectory + certificates.getTruststorePath().getFileName());
+            container.withEnv(prefix + "SSL_TRUSTSTORE_PASSWORD", certificates.getTruststorePassword());
+        }
+        return certificates;
     }
 }

@@ -30,6 +30,7 @@ import com.github.ydespreaux.testcontainers.kafka.security.Certificates;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.rules.ExternalResource;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 import org.testcontainers.containers.Network;
 
@@ -105,6 +106,7 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
                 .withRegisterSpringbootProperties(true);
     }
 
+    @Override
     public S self() {
         return (S) this;
     }
@@ -283,19 +285,19 @@ public class ConfluentKafkaContainer<S extends ConfluentKafkaContainer<S>> exten
         return this.withAcls(certificates, AclsOperation.READ, topic, group);
     }
 
-    public S withAcls(AclsOperation operation, String topic, String group) {
+    public S withAcls(AclsOperation operation, String topic, @Nullable String group) {
         return withAcls(this.kafkaContainer.getKafkaClientCertificates(), new AclsOperation[]{operation}, topic, group);
     }
 
-    public S withAcls(Certificates certificates, AclsOperation operation, String topic, String group) {
+    public S withAcls(Certificates certificates, AclsOperation operation, String topic, @Nullable String group) {
         return withAcls(certificates, new AclsOperation[]{operation}, topic, group);
     }
 
-    public S withAcls(AclsOperation[] operations, String topic, String group) {
+    public S withAcls(AclsOperation[] operations, String topic, @Nullable String group) {
         return withAcls(this.kafkaContainer.getKafkaClientCertificates(), operations, topic, group);
     }
 
-    public S withAcls(Certificates certificates, AclsOperation[] operations, String topic, String group) {
+    public S withAcls(Certificates certificates, AclsOperation[] operations, String topic, @Nullable String group) {
         Objects.requireNonNull(certificates, "Client certificates are not initialized. Call the setClientCertificates method before.");
         List<AclsAddCmd> commands = new ArrayList<>(operations.length);
         for (AclsOperation operation : operations) {

@@ -22,6 +22,7 @@ package com.github.ydespreaux.testcontainers.mysql;
 
 import com.github.ydespreaux.testcontainers.common.jdbc.AbstractJdbcContainer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.shaded.org.apache.commons.io.FilenameUtils;
 import org.testcontainers.utility.MountableFile;
@@ -31,7 +32,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -52,6 +52,7 @@ public class MySQLContainer extends AbstractJdbcContainer<MySQLContainer> {
 
     private static final String DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
     private static final String DRIVER_V8_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
+    private static final String MYSQL_PLATFORM = "mysql";
 
     /**
      * Default image name
@@ -126,7 +127,7 @@ public class MySQLContainer extends AbstractJdbcContainer<MySQLContainer> {
      */
     @Override
     public Set<Integer> getLivenessCheckPortNumbers() {
-        return new HashSet(this.getMappedPort(MYSQL_PORT.intValue()).intValue());
+        return Set.of(this.getMappedPort(MYSQL_PORT.intValue()));
     }
 
     /**
@@ -230,7 +231,7 @@ public class MySQLContainer extends AbstractJdbcContainer<MySQLContainer> {
      * @param sqlInit
      * @return
      */
-    public MySQLContainer withSqlScriptFile(String sqlInit) {
+    public MySQLContainer withSqlScriptFile(@Nullable String sqlInit) {
         if (sqlInit == null) {
             return this.self();
         }
@@ -254,7 +255,7 @@ public class MySQLContainer extends AbstractJdbcContainer<MySQLContainer> {
      * @param directory
      * @return
      */
-    public MySQLContainer withSqlScriptDirectory(String directory) {
+    public MySQLContainer withSqlScriptDirectory(@Nullable String directory) {
         if (directory == null) {
             return this.self();
         }
@@ -314,7 +315,7 @@ public class MySQLContainer extends AbstractJdbcContainer<MySQLContainer> {
         System.setProperty(this.getUrlSystemProperty(), constructUrlForConnection(""));
         System.setProperty(this.getUsernameSystemProperty(), this.getUsername());
         System.setProperty(this.getPasswordSystemProperty(), this.getPassword());
-        System.setProperty(this.getPlatformSystemProperty(), "mysql");
+        System.setProperty(this.getPlatformSystemProperty(), MYSQL_PLATFORM);
     }
 
     /**

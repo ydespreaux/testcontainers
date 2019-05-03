@@ -23,6 +23,7 @@ package com.github.ydespreaux.testcontainers.kafka.rule;
 
 import com.github.ydespreaux.testcontainers.kafka.containers.KafkaConnectContainer;
 import com.github.ydespreaux.testcontainers.kafka.security.Certificates;
+import org.springframework.lang.Nullable;
 
 /**
  * Define the environment for kafka connect container.
@@ -122,7 +123,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param groupId
      * @return
      */
-    public ConfluentKafkaConnectContainer withGroupId(String groupId) {
+    public ConfluentKafkaConnectContainer withGroupId(@Nullable String groupId) {
         if (groupId != null) {
             this.kafkaConnectContainer.withGroupId(groupId);
         }
@@ -134,7 +135,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param topic
      * @return
      */
-    public ConfluentKafkaConnectContainer withConfigStorageTopic(String topic) {
+    public ConfluentKafkaConnectContainer withConfigStorageTopic(@Nullable String topic) {
         if (topic != null) {
             this.kafkaConnectContainer.withConfigStorageTopic(topic);
         }
@@ -147,7 +148,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param topic
      * @return
      */
-    public ConfluentKafkaConnectContainer withOffsetStorageTopic(String topic) {
+    public ConfluentKafkaConnectContainer withOffsetStorageTopic(@Nullable String topic) {
         if (topic != null) {
             this.kafkaConnectContainer.withOffsetStorageTopic(topic);
         }
@@ -159,7 +160,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param partitions
      * @return
      */
-    public ConfluentKafkaConnectContainer withOffsetStoragePartition(Integer partitions) {
+    public ConfluentKafkaConnectContainer withOffsetStoragePartition(@Nullable Integer partitions) {
         if (partitions != null) {
             this.kafkaConnectContainer.withOffsetStoragePartition(partitions);
         }
@@ -171,7 +172,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param topic
      * @return
      */
-    public ConfluentKafkaConnectContainer withStatusStorageTopic(String topic) {
+    public ConfluentKafkaConnectContainer withStatusStorageTopic(@Nullable String topic) {
         if (topic != null) {
             this.kafkaConnectContainer.withStatusStorageTopic(topic);
         }
@@ -184,7 +185,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param partitions
      * @return
      */
-    public ConfluentKafkaConnectContainer withStatusStoragePartition(Integer partitions) {
+    public ConfluentKafkaConnectContainer withStatusStoragePartition(@Nullable Integer partitions) {
         if (partitions != null) {
             this.kafkaConnectContainer.withStatusStoragePartition(partitions);
         }
@@ -197,7 +198,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param storageFilename
      * @return
      */
-    public ConfluentKafkaConnectContainer withOffsetStorageFilename(String storageFilename) {
+    public ConfluentKafkaConnectContainer withOffsetStorageFilename(@Nullable String storageFilename) {
         if (storageFilename != null) {
             this.kafkaConnectContainer.withOffsetStorageFilename(storageFilename);
         }
@@ -210,7 +211,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param keyConverter
      * @return
      */
-    public ConfluentKafkaConnectContainer withKeyConverter(String keyConverter) {
+    public ConfluentKafkaConnectContainer withKeyConverter(@Nullable String keyConverter) {
         if (keyConverter != null) {
             this.kafkaConnectContainer.withKeyConverter(keyConverter);
         }
@@ -223,7 +224,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param valueConverter
      * @return
      */
-    public ConfluentKafkaConnectContainer withValueConverter(String valueConverter) {
+    public ConfluentKafkaConnectContainer withValueConverter(@Nullable String valueConverter) {
         if (valueConverter != null) {
             this.kafkaConnectContainer.withValueConverter(valueConverter);
         }
@@ -236,7 +237,7 @@ public class ConfluentKafkaConnectContainer extends ConfluentKafkaContainer<Conf
      * @param plugins
      * @return
      */
-    public ConfluentKafkaConnectContainer withPlugins(String plugins) {
+    public ConfluentKafkaConnectContainer withPlugins(@Nullable String plugins) {
         if (plugins != null) {
             this.kafkaConnectContainer.withPlugins(plugins);
         }

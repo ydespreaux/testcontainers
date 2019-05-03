@@ -33,6 +33,7 @@ import com.github.ydespreaux.testcontainers.kafka.security.CertificateUtils;
 import com.github.ydespreaux.testcontainers.kafka.security.Certificates;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
@@ -56,7 +57,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 @Slf4j
 public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer> implements IContainer<KafkaContainer> {
 
-    private static final String SECRETS_DIRECTORY = "/etc/kafka/secrets";
+    private static final String SECRETS_DIRECTORY = "/etc/kafka/secrets/";
     private static final Command<KafkaContainer> healthCmd = new KafkaReadyCmd(10);
 
     private static final String KAFKA_DEFAULT_BASE_URL = "confluentinc/cp-kafka";
@@ -67,7 +68,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
     private static final String KEYSTORE_CREDENTIALS_FILENAME = "ks_credentials";
     private static final String TRUSTSTORE_CREDENTIALS_FILENAME = "ts_credentials";
 
-    private static final Collection<String> FORMATS_VERSION = Collections.unmodifiableList(Arrays.asList("0.10.0", "0.10.1", "0.10.2", "0.11.0", "1.0.0", "1.1.0", "2.0.0"));
+    private static final Collection<String> FORMATS_VERSION = List.of("0.10.0", "0.10.1", "0.10.2", "0.11.0", "1.0.0", "1.1.0", "2.0.0");
 
     /**
      *
@@ -98,16 +99,8 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
     /**
      *
      */
-    private final Map<String, String> systemPropertyMap = new HashMap<String, String>() {{
-        put(BROKER_SERVERS_SYSTEM_PROPERTY, BROKER_SERVERS_SYSTEM_PROPERTY);
-        put(SECURITY_PROTOCOL_SYSTEM_PROPERTY, SECURITY_PROTOCOL_SYSTEM_PROPERTY);
-        put(KEY_PASSWORD_SYSTEM_PROPERTY, KEY_PASSWORD_SYSTEM_PROPERTY);
-        put(KEYSTORE_LOCATION_SYSTEM_PROPERTY, KEYSTORE_LOCATION_SYSTEM_PROPERTY);
-        put(KEYSTORE_PASSWORD_SYSTEM_PROPERTY, KEYSTORE_PASSWORD_SYSTEM_PROPERTY);
-        put(TRUSTSTORE_LOCATION_SYSTEM_PROPERTY, TRUSTSTORE_LOCATION_SYSTEM_PROPERTY);
-        put(TRUSTSTORE_PASSWORD_SYSTEM_PROPERTY, TRUSTSTORE_PASSWORD_SYSTEM_PROPERTY);
-        put(IDENTIFICATION_ALGORITHM_SYSTEM_PROPERTY, IDENTIFICATION_ALGORITHM_SYSTEM_PROPERTY);
-    }};
+    private final Map<String, String> systemPropertyMap = new HashMap<>(8);
+
     private final List<AclsAddCmd> aclsCommands = new ArrayList<>();
     @Getter
     private Certificates kafkaServerCertificates;
@@ -146,6 +139,18 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
                 }
             }
         }).withStartupTimeout(Duration.ofSeconds(120));
+        initializeMapProperties();
+    }
+
+    private void initializeMapProperties() {
+        systemPropertyMap.put(BROKER_SERVERS_SYSTEM_PROPERTY, BROKER_SERVERS_SYSTEM_PROPERTY);
+        systemPropertyMap.put(SECURITY_PROTOCOL_SYSTEM_PROPERTY, SECURITY_PROTOCOL_SYSTEM_PROPERTY);
+        systemPropertyMap.put(KEY_PASSWORD_SYSTEM_PROPERTY, KEY_PASSWORD_SYSTEM_PROPERTY);
+        systemPropertyMap.put(KEYSTORE_LOCATION_SYSTEM_PROPERTY, KEYSTORE_LOCATION_SYSTEM_PROPERTY);
+        systemPropertyMap.put(KEYSTORE_PASSWORD_SYSTEM_PROPERTY, KEYSTORE_PASSWORD_SYSTEM_PROPERTY);
+        systemPropertyMap.put(TRUSTSTORE_LOCATION_SYSTEM_PROPERTY, TRUSTSTORE_LOCATION_SYSTEM_PROPERTY);
+        systemPropertyMap.put(TRUSTSTORE_PASSWORD_SYSTEM_PROPERTY, TRUSTSTORE_PASSWORD_SYSTEM_PROPERTY);
+        systemPropertyMap.put(IDENTIFICATION_ALGORITHM_SYSTEM_PROPERTY, IDENTIFICATION_ALGORITHM_SYSTEM_PROPERTY);
     }
 
     /**
@@ -253,7 +258,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
      * @param version
      * @return
      */
-    public KafkaContainer withFormatMessageVersion(String version) {
+    public KafkaContainer withFormatMessageVersion(@Nullable String version) {
         if (version != null) {
             checkFormatMessageVersion(version);
             withEnv("KAFKA_INTER_BROKER_PROTOCOL_VERSION", version);
@@ -266,7 +271,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
      *
      * @param version
      */
-    private void checkFormatMessageVersion(String version) {
+    private void checkFormatMessageVersion(@Nullable String version) {
         if (!FORMATS_VERSION.contains(version)) {
             throw new IllegalArgumentException(format("Illegal message format version : %s", version));
         }
@@ -277,7 +282,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
      * @param zookeeperHostname
      * @return
      */
-    public KafkaContainer withZookeeperHostname(String zookeeperHostname) {
+    public KafkaContainer withZookeeperHostname(@Nullable String zookeeperHostname) {
         if (zookeeperHostname != null) {
             withCreateContainerCmdModifier(cmd -> cmd.withLinks(new Link(zookeeperHostname, "zookeeper")));
         }
@@ -347,15 +352,6 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
     }
 
     /**
-     * @deprecated use getInternalURL()
-     * @return
-     */
-    @Deprecated
-    public String getLocalURL() {
-        return getInternalURL();
-    }
-
-    /**
      * Register spring boot properties.
      */
     protected void registerKafkaEnvironment() {
@@ -383,7 +379,7 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
      * @param certificates
      * @return
      */
-    public KafkaContainer withKafkaServerCertificates(Certificates certificates) {
+    public KafkaContainer withKafkaServerCertificates(@Nullable Certificates certificates) {
         if (certificates == null) {
             return this;
         }

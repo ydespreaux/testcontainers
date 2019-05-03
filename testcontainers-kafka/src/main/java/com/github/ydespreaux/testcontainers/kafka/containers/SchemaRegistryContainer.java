@@ -24,7 +24,7 @@ import com.github.ydespreaux.testcontainers.common.IContainer;
 import com.github.ydespreaux.testcontainers.kafka.security.Certificates;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.testcontainers.containers.BindMode;
+import org.springframework.lang.Nullable;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -33,6 +33,7 @@ import java.util.UUID;
 
 import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.containerLogsConsumer;
 import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.getAvailableMappingPort;
+import static com.github.ydespreaux.testcontainers.kafka.security.CertificateUtils.addCertificates;
 import static java.lang.String.format;
 
 /**
@@ -44,7 +45,7 @@ import static java.lang.String.format;
 @Slf4j
 public class SchemaRegistryContainer extends FixedHostPortGenericContainer<SchemaRegistryContainer> implements IContainer<SchemaRegistryContainer> {
 
-    private static final String SECRETS_DIRECTORY = "/etc/schema-registry/secrets";
+    private static final String SECRETS_DIRECTORY = "/etc/schema-registry/secrets/";
 
     private static final String SCHEMA_REGISTRY_DEFAULT_BASE_URL = "confluentinc/cp-schema-registry";
 
@@ -112,27 +113,14 @@ public class SchemaRegistryContainer extends FixedHostPortGenericContainer<Schem
         return this.serverCertificates != null;
     }
 
-    public SchemaRegistryContainer withServerCertificates(Certificates certificates) {
+    public SchemaRegistryContainer withServerCertificates(@Nullable Certificates certificates) {
         if (certificates == null) {
             return this;
         }
         if (this.serverCertificates != null) {
             throw new IllegalArgumentException("Certificates already initialized");
         }
-        this.serverCertificates = certificates;
-
-        this.addFileSystemBind(certificates.getKeystorePath().toString(), SECRETS_DIRECTORY + '/' + certificates.getKeystorePath().getFileName(), BindMode.READ_ONLY);
-        if (certificates.getTruststorePath() != null) {
-            this.addFileSystemBind(certificates.getTruststorePath().toString(), SECRETS_DIRECTORY + '/' + certificates.getTruststorePath().getFileName(), BindMode.READ_ONLY);
-        }
-
-        withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_LOCATION", SECRETS_DIRECTORY + '/' + certificates.getKeystorePath().getFileName());
-        withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_PASSWORD", certificates.getKeystorePassword());
-        withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_KEY_PASSWORD", certificates.getKeystorePassword());
-        if (certificates.getTruststorePath() != null) {
-            withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_LOCATION", SECRETS_DIRECTORY + '/' + certificates.getTruststorePath().getFileName());
-            withEnv("SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_PASSWORD", certificates.getTruststorePassword());
-        }
+        this.serverCertificates = addCertificates(this, certificates, SECRETS_DIRECTORY, "SCHEMA_REGISTRY_KAFKASTORE_");
         return this;
     }
 

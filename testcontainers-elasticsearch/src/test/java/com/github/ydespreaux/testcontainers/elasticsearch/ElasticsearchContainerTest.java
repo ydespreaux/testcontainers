@@ -20,16 +20,16 @@
 
 package com.github.ydespreaux.testcontainers.elasticsearch;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -45,18 +45,6 @@ public class ElasticsearchContainerTest {
             .withFileInitScript("scripts/init.script")
             .withFileInitScript("scripts/init.json");
 
-    private static String testUrl(String path) {
-        return elasticContainer.getURL() + path;
-    }
-
-    private static OkHttpClient createHttpClient() {
-        return createHttpClient(10, TimeUnit.SECONDS);
-    }
-
-    private static OkHttpClient createHttpClient(long timeout, TimeUnit timeUnit) {
-        return new OkHttpClient.Builder().connectTimeout(timeout, timeUnit)
-                .writeTimeout(timeout, timeUnit).readTimeout(timeout, timeUnit).build();
-    }
 
     @Test
     void environmentSystemProperty() {
@@ -74,45 +62,43 @@ public class ElasticsearchContainerTest {
         assertThat(elasticContainer.getInternalURL(), is(equalTo("http://" + elasticContainer.getNetworkAliases().get(0) + ":" + 9200)));
     }
 
-    @Test
-    void health() throws IOException {
-        Response response = call("/_cluster/health");
-        assertThat(response.isSuccessful(), is(true));
+    private static URI buildURI(String path) {
+        return URI.create(elasticContainer.getURL() + path);
     }
 
     @Test
-    void getIndex() throws IOException {
-        Response response = call("/load_test_index");
-        assertThat(response.isSuccessful(), is(true));
-        assertThat(response.code(), is(equalTo(200)));
+    void health() throws Exception {
+        HttpResponse<String> response = call("/_cluster/health");
+        assertThat(response.statusCode(), is(equalTo(200)));
     }
 
     @Test
-    void getIndexFromResource() throws IOException {
-        Response response = call("/index-1");
-        assertThat(response.isSuccessful(), is(true));
-        assertThat(response.code(), is(equalTo(200)));
+    void getIndex() throws Exception {
+        HttpResponse<String> response = call("/load_test_index");
+        assertThat(response.statusCode(), is(equalTo(200)));
     }
 
     @Test
-    void getTemplateFromResource() throws IOException {
-        Response response = call("/_template/template2");
-        assertThat(response.isSuccessful(), is(true));
-        assertThat(response.code(), is(equalTo(200)));
+    void getIndexFromResource() throws Exception {
+        HttpResponse<String> response = call("/index-1");
+        assertThat(response.statusCode(), is(equalTo(200)));
     }
 
     @Test
-    void getDocument() throws IOException {
-        Response response = call("/load_test_index/test_type/2");
-        assertThat(response.isSuccessful(), is(true));
-        assertThat(response.code(), is(equalTo(200)));
+    void getTemplateFromResource() throws Exception {
+        HttpResponse<String> response = call("/_template/template2");
+        assertThat(response.statusCode(), is(equalTo(200)));
     }
 
+    @Test
+    void getDocument() throws Exception {
+        HttpResponse<String> response = call("/load_test_index/test_type/2");
+        assertThat(response.statusCode(), is(equalTo(200)));
+    }
 
-    private Response call(String path) throws IOException {
-        OkHttpClient client = createHttpClient();
-        Request request = new Request.Builder().get().url(testUrl(path)).build();
-        return client.newCall(request).execute();
+    private HttpResponse<String> call(String path) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder(buildURI(path)).build();
+        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
     }
 
 }

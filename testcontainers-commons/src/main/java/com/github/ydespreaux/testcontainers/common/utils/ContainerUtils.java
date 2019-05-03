@@ -26,6 +26,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.Value;
 import org.slf4j.Logger;
+import org.springframework.lang.Nullable;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 
@@ -43,6 +44,9 @@ import static java.lang.String.format;
  * @since 1.0.0
  */
 public class ContainerUtils {
+
+    public static final String DELIMITER_PATH = "/";
+
 
     /**
      *
@@ -70,6 +74,7 @@ public class ContainerUtils {
      * @param container the container
      * @return
      */
+    @Nullable
     public static String getContainerHostname(GenericContainer container) {
         InspectContainerResponse containerInfo = container.getContainerInfo();
         if (containerInfo == null) {
@@ -105,9 +110,9 @@ public class ContainerUtils {
         String cmdStdout;
         String cmdStderr;
 
-        try (ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-             ByteArrayOutputStream stderr = new ByteArrayOutputStream();
-             ExecStartResultCallback cmdCallback = new ExecStartResultCallback(stdout, stderr)) {
+        try (var stdout = new ByteArrayOutputStream();
+             var stderr = new ByteArrayOutputStream();
+             var cmdCallback = new ExecStartResultCallback(stdout, stderr)) {
             dockerClient.execStartCmd(cmd.getId()).exec(cmdCallback).awaitCompletion();
             cmdStdout = stdout.toString(StandardCharsets.UTF_8.name());
             cmdStderr = stderr.toString(StandardCharsets.UTF_8.name());
@@ -115,10 +120,7 @@ public class ContainerUtils {
             String format = format("Exception was thrown when executing: %s, for container: %s ", Arrays.toString(command), containerId);
             throw new IllegalStateException(format, e);
         }
-
-        int exitCode = dockerClient.inspectExecCmd(cmd.getId()).exec().getExitCode();
-        String output = cmdStdout.isEmpty() ? cmdStderr : cmdStdout;
-        return new ExecCmdResult(exitCode, output);
+        return new ExecCmdResult(dockerClient.inspectExecCmd(cmd.getId()).exec().getExitCode(), cmdStdout.isEmpty() ? cmdStderr : cmdStdout);
     }
 
 

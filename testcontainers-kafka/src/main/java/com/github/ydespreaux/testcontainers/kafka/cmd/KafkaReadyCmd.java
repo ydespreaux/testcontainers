@@ -23,7 +23,6 @@ package com.github.ydespreaux.testcontainers.kafka.cmd;
 import com.github.ydespreaux.testcontainers.common.cmd.AbstractCommand;
 import com.github.ydespreaux.testcontainers.kafka.containers.KafkaContainer;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -48,7 +47,7 @@ public class KafkaReadyCmd extends AbstractCommand<KafkaContainer> {
     @Override
     protected List<String> buildParameters(KafkaContainer container) {
         if (container.isSecured()) {
-            return Arrays.asList(
+            return List.of(
                     "cub",
                     "kafka-ready",
                     "-b",
@@ -62,7 +61,7 @@ public class KafkaReadyCmd extends AbstractCommand<KafkaContainer> {
             );
 
         } else {
-            return Arrays.asList(
+            return List.of(
                     "cub",
                     "kafka-ready",
                     "-b",

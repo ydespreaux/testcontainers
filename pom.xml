@@ -4,7 +4,7 @@
 
     <groupId>com.github.ydespreaux.testcontainers</groupId>
     <artifactId>testcontainers-build</artifactId>
-    <version>1.2.4-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>testcontainers-build</name>
     <description>Defined kafka, elasticsearh, mysql, cassandra containers</description>
@@ -31,7 +31,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
@@ -39,7 +39,6 @@
         <apache.commons.io.version>2.6</apache.commons.io.version>
         <apache.commons.lang.version>2.6</apache.commons.lang.version>
         <testcontainers.version>1.11.2</testcontainers.version>
-        <okhttp.version>3.13.1</okhttp.version>
         <commons-lang3.version>3.7</commons-lang3.version>
         <lombok.version>1.18.2</lombok.version>
         <mysql-version>8.0.13</mysql-version>
@@ -53,11 +52,6 @@
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.0.0</maven-javadoc-plugin.version>
         <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
-        <!-- Sonar configuration -->
-        <jacoco.report.ut>${project.build.directory}/jacoco-ut.exec</jacoco.report.ut>
-        <jacoco.report.it>${project.build.directory}/jacoco-it.exec</jacoco.report.it>
-        <sonar.junit.reportPaths>${project.build.directory}/surefire-reports</sonar.junit.reportPaths>
-        <sonar.jacoco.reportPaths>${jacoco.report.ut},${jacoco.report.it}</sonar.jacoco.reportPaths>
     </properties>
 
     <modules>
@@ -139,11 +133,6 @@
                 <version>${testcontainers.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${okhttp.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
@@ -207,8 +196,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -234,10 +222,6 @@
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
-                        <configuration>
-                            <destFile>${jacoco.report.ut}</destFile>
-                            <propertyName>surefireArgLine</propertyName>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>post-unit-test</id>
@@ -251,10 +235,6 @@
                         <goals>
                             <goal>prepare-agent-integration</goal>
                         </goals>
-                        <configuration>
-                            <destFile>${jacoco.report.it}</destFile>
-                            <propertyName>failsafeArgLine</propertyName>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>post-integration-test</id>
@@ -338,9 +318,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <source>${java.version}</source>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -388,7 +365,7 @@
                 <sonar.projectKey>${project.artifactId}:${project.version}</sonar.projectKey>
                 <sonar.projectName>${project.name}</sonar.projectName>
                 <sonar.host.url>http://localhost:9000</sonar.host.url>
-                <sonar.login>9adb60b57ac3ac310a9b3e423c3d1eae2f4947ce</sonar.login>
+                <sonar.login>af5b598cd35f140b408dcb99117df81e0d5abf03</sonar.login>
             </properties>
         </profile>
     </profiles>

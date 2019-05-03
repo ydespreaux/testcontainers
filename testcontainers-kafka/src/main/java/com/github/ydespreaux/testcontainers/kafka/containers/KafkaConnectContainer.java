@@ -23,6 +23,7 @@ package com.github.ydespreaux.testcontainers.kafka.containers;
 import com.github.ydespreaux.testcontainers.common.IContainer;
 import com.github.ydespreaux.testcontainers.kafka.security.Certificates;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -38,6 +39,7 @@ import java.util.UUID;
 
 import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.containerLogsConsumer;
 import static com.github.ydespreaux.testcontainers.common.utils.ContainerUtils.getAvailableMappingPort;
+import static com.github.ydespreaux.testcontainers.kafka.security.CertificateUtils.addCertificates;
 import static java.lang.String.format;
 
 /**
@@ -196,24 +198,14 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param certificates
      * @return
      */
-    public KafkaConnectContainer withServerCertificates(Certificates certificates) {
+    public KafkaConnectContainer withServerCertificates(@Nullable Certificates certificates) {
         if (certificates == null) {
             return this;
         }
-        this.kafkaServerCertificates = certificates;
-        this.addFileSystemBind(certificates.getKeystorePath().toString(), SECRETS_DIRECTORY + '/' + certificates.getKeystorePath().getFileName(), BindMode.READ_ONLY);
-        if (certificates.getTruststorePath() != null) {
-            this.addFileSystemBind(certificates.getTruststorePath().toString(), SECRETS_DIRECTORY + '/' + certificates.getTruststorePath().getFileName(), BindMode.READ_ONLY);
+        if (this.kafkaServerCertificates != null) {
+            throw new IllegalArgumentException("Certificates is already initialized.");
         }
-        withEnv("CONNECT_SECURITY_PROTOCOL", "SSL");
-        withEnv("CONNECT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM", "");
-        withEnv("CONNECT_SSL_KEYSTORE_LOCATION", SECRETS_DIRECTORY + '/' + certificates.getKeystorePath().getFileName());
-        withEnv("CONNECT_SSL_KEYSTORE_PASSWORD", certificates.getKeystorePassword());
-        withEnv("CONNECT_SSL_KEY_PASSWORD", certificates.getKeystorePassword());
-        if (certificates.getTruststorePath() != null) {
-            withEnv("CONNECT_SSL_TRUSTSTORE_LOCATION", SECRETS_DIRECTORY + '/' + certificates.getTruststorePath().getFileName());
-            withEnv("CONNECT_SSL_TRUSTSTORE_PASSWORD", certificates.getTruststorePassword());
-        }
+        this.kafkaServerCertificates = addCertificates(this, certificates, SECRETS_DIRECTORY, "CONNECT_");
         return this;
     }
 
@@ -234,7 +226,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param groupId
      * @return
      */
-    public KafkaConnectContainer withGroupId(String groupId) {
+    public KafkaConnectContainer withGroupId(@Nullable String groupId) {
         if (groupId != null) {
             withEnv(GROUP_ID_CONFIG, groupId);
         }
@@ -247,7 +239,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param topic
      * @return
      */
-    public KafkaConnectContainer withConfigStorageTopic(String topic) {
+    public KafkaConnectContainer withConfigStorageTopic(@Nullable String topic) {
         if (topic != null) {
             withEnv(CONFIG_STORAGE_TOPIC_CONFIG, topic);
         }
@@ -260,7 +252,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param topic
      * @return
      */
-    public KafkaConnectContainer withOffsetStorageTopic(String topic) {
+    public KafkaConnectContainer withOffsetStorageTopic(@Nullable String topic) {
         if (topic != null) {
             withEnv(OFFSET_STORAGE_TOPIC_CONFIG, topic);
         }
@@ -273,7 +265,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param partitions
      * @return
      */
-    public KafkaConnectContainer withOffsetStoragePartition(Integer partitions) {
+    public KafkaConnectContainer withOffsetStoragePartition(@Nullable Integer partitions) {
         if (partitions != null) {
             withEnv(OFFSET_STORAGE_PARTITIONS_CONFIG, String.valueOf(partitions));
         }
@@ -285,7 +277,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param topic
      * @return
      */
-    public KafkaConnectContainer withStatusStorageTopic(String topic) {
+    public KafkaConnectContainer withStatusStorageTopic(@Nullable String topic) {
         if (topic != null) {
             withEnv(STATUS_STORAGE_TOPIC_CONFIG, topic);
         }
@@ -298,7 +290,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param partitions
      * @return
      */
-    public KafkaConnectContainer withStatusStoragePartition(Integer partitions) {
+    public KafkaConnectContainer withStatusStoragePartition(@Nullable Integer partitions) {
         if (partitions != null) {
             withEnv(STATUS_STORAGE_PARTITIONS_CONFIG, String.valueOf(partitions));
         }
@@ -311,7 +303,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param storageFilename
      * @return
      */
-    public KafkaConnectContainer withOffsetStorageFilename(String storageFilename) {
+    public KafkaConnectContainer withOffsetStorageFilename(@Nullable String storageFilename) {
         if (storageFilename != null) {
             withEnv(OFFSET_STORAGE_FILE_FILENAME_CONFIG, storageFilename);
         }
@@ -324,7 +316,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param keyConverter
      * @return
      */
-    public KafkaConnectContainer withKeyConverter(String keyConverter) {
+    public KafkaConnectContainer withKeyConverter(@Nullable String keyConverter) {
         if (keyConverter != null) {
             withEnv(KEY_CONVERTER_CONFIG, keyConverter);
             this.hasKeyAvroConverter = keyConverter.contains(AVRO_CONVERTER_PATTERN);
@@ -338,7 +330,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param valueConverter
      * @return
      */
-    public KafkaConnectContainer withValueConverter(String valueConverter) {
+    public KafkaConnectContainer withValueConverter(@Nullable String valueConverter) {
         if (valueConverter != null) {
             withEnv(VALUE_CONVERTER_CONFIG, valueConverter);
             this.hasValueAvroConverter = valueConverter.contains(AVRO_CONVERTER_PATTERN);
@@ -352,7 +344,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param plugins
      * @return
      */
-    public KafkaConnectContainer withPlugins(Set<String> plugins) {
+    public KafkaConnectContainer withPlugins(@Nullable Set<String> plugins) {
         if (plugins == null) {
             return this;
         }
@@ -366,7 +358,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param plugins
      * @return
      */
-    public KafkaConnectContainer withPlugins(String plugins) {
+    public KafkaConnectContainer withPlugins(@Nullable String plugins) {
         if (plugins == null) {
             return this;
         }
@@ -391,7 +383,7 @@ public class KafkaConnectContainer extends FixedHostPortGenericContainer<KafkaCo
      * @param restAppSystemProperty
      * @return
      */
-    public KafkaConnectContainer withRestAppSystemProperty(String restAppSystemProperty) {
+    public KafkaConnectContainer withRestAppSystemProperty(@Nullable String restAppSystemProperty) {
         if (restAppSystemProperty != null) {
             this.restAppSystemProperty = restAppSystemProperty;
         }

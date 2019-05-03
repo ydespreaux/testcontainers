@@ -24,7 +24,6 @@ import com.github.ydespreaux.testcontainers.cassandra.CassandraContainer;
 import com.github.ydespreaux.testcontainers.common.cmd.AbstractCommand;
 import lombok.Getter;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class CqlScriptCmd extends AbstractCommand<CassandraContainer> {
@@ -38,6 +37,6 @@ public class CqlScriptCmd extends AbstractCommand<CassandraContainer> {
 
     @Override
     protected List<String> buildParameters(CassandraContainer container) {
-        return Arrays.asList("cqlsh", "-f", script);
+        return List.of("cqlsh", "-f", script);
     }
 }

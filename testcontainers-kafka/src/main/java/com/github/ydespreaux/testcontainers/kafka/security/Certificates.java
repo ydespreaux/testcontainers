@@ -22,6 +22,7 @@ package com.github.ydespreaux.testcontainers.kafka.security;
 
 import lombok.Getter;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.testcontainers.utility.MountableFile;
 
@@ -40,12 +41,14 @@ public class Certificates implements InitializingBean {
     private final String keystorePassword;
     private final String truststoreFilename;
     @Getter
+    @Nullable
     private final String truststorePassword;
 
 
     @Getter
     private Path keystorePath;
     @Getter
+    @Nullable
     private Path truststorePath;
     @Getter
     private String user;
@@ -64,7 +67,7 @@ public class Certificates implements InitializingBean {
      * @param truststoreFilename
      * @param truststorePassword
      */
-    public Certificates(String keystoreFilename, String keystorePassword, String truststoreFilename, String truststorePassword) {
+    public Certificates(String keystoreFilename, String keystorePassword, @Nullable String truststoreFilename, @Nullable String truststorePassword) {
         Assert.notNull(keystoreFilename, "keystoreFilename parameter is mandatory");
         Assert.notNull(keystorePassword, "keystorePassword parameter is mandatory");
         this.keystoreFilename = keystoreFilename;
