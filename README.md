@@ -20,7 +20,7 @@ Versions
 
 |   spring-testcontainers    |   testcontainers | JUnit version compatibility |
 |:--------------------------:|:----------------:|--------------:|
-|   1.2.3                    |       1.11.2     | Junit 4, Junit 5 |
+|   1.2.4                    |       1.11.2     | Junit 4, Junit 5 |
 |   1.2.2                    |       1.11.1     | Junit 4, Junit 5 |
 |   1.2.1                    |       1.10.6     | Junit 4, Junit 5 |
 |   1.2.0                    |       1.10.6     | Junit 4 |
